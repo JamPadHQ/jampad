@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
+import { Toaster } from "@/components/ui/sonner"
 import App from './App';
 
 import './styles.css';
@@ -13,6 +14,7 @@ root.render(
 	<StrictMode>
 		<BrowserRouter>
 			<App />
+			<Toaster />
 		</BrowserRouter>
 	</StrictMode>
 );

@@ -43,3 +43,10 @@ export interface Element {
 	type: 'path' | 'shape'
 	data: DrawPath
 }
+
+export type Settings = {
+	user: {
+		nickname: string
+		color: string
+	}
+}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { CanvasState } from '../lib/types';
 import { calculateZoomToPoint } from '../lib/canvasUtils';
 import { CANVAS_CONSTANTS } from '../lib/constants';

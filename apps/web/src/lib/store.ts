@@ -1,12 +1,17 @@
 import { create } from 'zustand'
-import type { Element, Point, Tool } from '@/lib/types'
+import type { Element, Point, Settings, Tool } from '@/lib/types'
+import generateRandomUsername from "generate-random-username"
+import { getColorForNickname } from './colors'
 
+const defaultNickname = generateRandomUsername({ separator: '-' })
+const userColor = getColorForNickname(defaultNickname)
 
 interface CanvasState {
 	tool: Tool
 	elements: Element[]
 	selectedElements: string[]
 	currentDrawing: Point[] | null
+	settings: Settings
 }
 
 interface CanvasActions {
@@ -20,6 +25,7 @@ interface CanvasActions {
 	addDrawingPoint: (point: Point) => void
 	finishDrawing: () => string | null // returns id of created element
 	cancelDrawing: () => void
+	setSettings: (settings: Settings) => void
 }
 
 export const useCanvasStore = create<CanvasState & CanvasActions>()((set, get) => ({
@@ -27,7 +33,13 @@ export const useCanvasStore = create<CanvasState & CanvasActions>()((set, get) =
 	elements: [],
 	selectedElements: [],
 	currentDrawing: null,
-
+	settings: {
+		user: {
+			nickname: defaultNickname,
+			color: userColor
+		}
+	},
+	setSettings: (settings) => set({ settings }),
 	setTool: (tool) => set({ tool }),
 
 	addElement: (element) => set((state) => ({

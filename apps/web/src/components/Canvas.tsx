@@ -4,7 +4,6 @@ import { useCanvasEvents } from '@/hooks/useCanvasEvents';
 import { useDrawing } from '@/hooks/useDrawing';
 import { useSelection } from '@/hooks/useSelection';
 import { CanvasGrid } from '@/components/CanvasGrid';
-import { CanvasAxes } from '@/components/CanvasAxes';
 import { CanvasElements } from '@/components/CanvasElements';
 import { CurrentDrawing } from '@/components/CurrentDrawing';
 import { SelectionBox } from '@/components/SelectionBox';
@@ -95,9 +94,6 @@ function Canvas() {
 					{/* Grid Pattern */}
 					<CanvasGrid />
 
-					{/* Origin and Axes */}
-					<CanvasAxes />
-
 					{/* Main Canvas Content - SVG for drawing and selection */}
 					<svg
 						className="absolute inset-0"
@@ -110,10 +106,6 @@ function Canvas() {
 							pointerEvents: 'none'
 						}}
 					>
-						{/* Test marker at origin for debugging */}
-						<circle cx="0" cy="0" r="5" fill="red" opacity="0.5" />
-						<text x="10" y="10" fill="red" fontSize="12">Origin (0,0)</text>
-
 						{/* Rendered elements */}
 						<CanvasElements canvasState={canvasState} />
 
