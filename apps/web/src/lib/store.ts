@@ -1,10 +1,8 @@
 import { create } from 'zustand'
 import type { Element, Member, Point, Tool } from '@/lib/types'
 import generateRandomUsername from "generate-random-username"
-import { getColorForNickname } from './colors'
 
 const defaultNickname = generateRandomUsername({ separator: '-' })
-const userColor = getColorForNickname(defaultNickname)
 
 interface CanvasState {
 	user: Member
@@ -13,6 +11,7 @@ interface CanvasState {
 	selectedElements: string[]
 	currentDrawing: Point[] | null
 	members: Member[]
+	isConnected: boolean
 }
 
 interface CanvasActions {
@@ -29,29 +28,21 @@ interface CanvasActions {
 	cancelDrawing: () => void
 	addMember: (member: Member) => void
 	removeMember: (nickname: string) => void
+	setConnected: (connected: boolean) => void
+	updateMembers: (members: Member[]) => void
 }
 
 export const useCanvasStore = create<CanvasState & CanvasActions>()((set, get) => ({
 	user: {
 		nickname: defaultNickname,
-		color: userColor
+		color: '#FFB6C1' // Default color, will be updated by server
 	},
 	tool: 'move',
 	elements: [],
 	selectedElements: [],
 	currentDrawing: null,
-	settings: {
-		user: {
-			nickname: defaultNickname,
-			color: userColor
-		}
-	},
-	members: [
-		{
-			nickname: defaultNickname,
-			color: userColor
-		}
-	],
+	isConnected: false,
+	members: [],
 
 	setUser: (user) => set({ user }),
 
@@ -62,6 +53,10 @@ export const useCanvasStore = create<CanvasState & CanvasActions>()((set, get) =
 	removeMember: (nickname) => set((state) => ({
 		members: state.members.filter(member => member.nickname !== nickname)
 	})),
+
+	updateMembers: (members) => set({ members }),
+
+	setConnected: (connected) => set({ isConnected: connected }),
 
 	setTool: (tool) => set({ tool }),
 

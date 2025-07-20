@@ -7,7 +7,6 @@ import { toast } from "sonner"
 import { z } from "zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import { useCanvasStore } from '@/lib/store';
-import { getColorForNickname } from '@/lib/colors';
 
 const formSchema = z.object({
 	nickname: z.string().min(2, {
@@ -33,7 +32,7 @@ function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 	function onSubmit(values: z.infer<typeof formSchema>) {
 		setUser({
 			nickname: values.nickname,
-			color: getColorForNickname(values.nickname),
+			color: user.color,
 		})
 		toast.success("Settings saved")
 	}

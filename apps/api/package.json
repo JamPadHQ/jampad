@@ -9,7 +9,10 @@
   "dependencies": {
     "@hono/node-server": "^1.17.1",
     "@hono/node-ws": "^1.2.0",
-    "hono": "^4.8.5"
+    "@types/ws": "^8.18.1",
+    "hono": "^4.8.5",
+    "socket.io": "^4.8.1",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
