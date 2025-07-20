@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
+import { Button } from './ui/button';
 
 interface CanvasState {
 	x: number;
@@ -106,13 +107,14 @@ function InfiniteCanvas() {
 			</div>
 
 			{/* Reset Button */}
-			<button
+			<Button
 				onClick={resetCanvas}
-				className="absolute bottom-4 right-4 z-10 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-colors duration-200 font-medium"
+				variant={'outline'}
+				className="absolute bottom-2 right-2 z-10"
 				title="Reset to origin (0,0) and 100% zoom"
 			>
 				Reset View
-			</button>
+			</Button>
 
 			{/* Canvas Container */}
 			<div
