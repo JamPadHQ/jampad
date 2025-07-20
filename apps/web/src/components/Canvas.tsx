@@ -68,7 +68,7 @@ function Canvas() {
 	const actualPosition = getActualCanvasPosition(canvasState);
 
 	return (
-		<div className="relative w-full h-screen overflow-hidden bg-gray-100">
+		<div className="relative w-full h-screen overflow-hidden bg-background">
 			{/* Canvas Overlay - Debug info and controls */}
 			<CanvasOverlay
 				canvasState={canvasState}

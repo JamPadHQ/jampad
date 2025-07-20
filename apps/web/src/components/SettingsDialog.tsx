@@ -21,21 +21,19 @@ type SettingsDialogProps = {
 }
 
 function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-	const { settings, setSettings } = useCanvasStore();
+	const { user, setUser } = useCanvasStore();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			nickname: settings.user.nickname,
+			nickname: user.nickname,
 		},
 	})
 
 	function onSubmit(values: z.infer<typeof formSchema>) {
-		setSettings({
-			user: {
-				nickname: values.nickname,
-				color: getColorForNickname(values.nickname),
-			},
+		setUser({
+			nickname: values.nickname,
+			color: getColorForNickname(values.nickname),
 		})
 		toast.success("Settings saved")
 	}

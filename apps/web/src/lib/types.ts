@@ -44,9 +44,9 @@ export interface Element {
 	data: DrawPath
 }
 
-export type Settings = {
-	user: {
-		nickname: string
-		color: string
-	}
+export interface Member {
+	nickname: string
+	color: string
 }
+
+export type Settings = {}

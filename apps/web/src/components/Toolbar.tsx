@@ -1,4 +1,4 @@
-import { HandIcon, MousePointer2Icon, PenIcon, Settings2Icon } from 'lucide-react';
+import { HandIcon, MicOffIcon, MonitorIcon, MousePointer2Icon, PenIcon, Settings2Icon, VideoIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCanvasStore } from '@/lib/store';
 import type { Tool } from '@/lib/types';
@@ -26,10 +26,13 @@ function Toolbar() {
 	const setTool = useCanvasStore((state) => state.setTool);
 
 	return (
-		<div className='fixed bottom-2 left-0 right-0 flex justify-center items-center'>
-			<div className='p-2 bg-white rounded-lg shadow-lg space-x-0.5 flex items-center'>
-				<Button variant='ghost' size='icon' onClick={() => setSettingsDialogOpen(true)}>
-					<Settings2Icon />
+		<div className='fixed bottom-3 left-0 right-0 flex justify-center items-center'>
+			<div className='p-2 bg-secondary rounded-lg shadow-lg space-x-0.5 flex items-center'>
+				<Button variant='ghost' size='icon'>
+					<MicOffIcon />
+				</Button>
+				<Button variant='ghost' size='icon' disabled>
+					<VideoIcon />
 				</Button>
 				<div className='h-4 w-px bg-foreground/25 mx-2' />
 				{TOOLS.map(({ icon: Icon, tool }) => (
@@ -37,6 +40,14 @@ function Toolbar() {
 						<Icon />
 					</Button>
 				))}
+				<div className='h-4 w-px bg-foreground/25 mx-2' />
+				<Button variant='ghost' size='icon'>
+					<MonitorIcon />
+				</Button>
+				<div className='h-4 w-px bg-foreground/25 mx-2' />
+				<Button variant='ghost' size='icon' onClick={() => setSettingsDialogOpen(true)}>
+					<Settings2Icon />
+				</Button>
 			</div>
 			<SettingsDialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen} />
 		</div>

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Element, Point, Settings, Tool } from '@/lib/types'
+import type { Element, Member, Point, Tool } from '@/lib/types'
 import generateRandomUsername from "generate-random-username"
 import { getColorForNickname } from './colors'
 
@@ -7,14 +7,16 @@ const defaultNickname = generateRandomUsername({ separator: '-' })
 const userColor = getColorForNickname(defaultNickname)
 
 interface CanvasState {
+	user: Member
 	tool: Tool
 	elements: Element[]
 	selectedElements: string[]
 	currentDrawing: Point[] | null
-	settings: Settings
+	members: Member[]
 }
 
 interface CanvasActions {
+	setUser: (user: Member) => void
 	setTool: (tool: Tool) => void
 	addElement: (element: Element) => void
 	removeElement: (id: string) => void
@@ -25,10 +27,15 @@ interface CanvasActions {
 	addDrawingPoint: (point: Point) => void
 	finishDrawing: () => string | null // returns id of created element
 	cancelDrawing: () => void
-	setSettings: (settings: Settings) => void
+	addMember: (member: Member) => void
+	removeMember: (nickname: string) => void
 }
 
 export const useCanvasStore = create<CanvasState & CanvasActions>()((set, get) => ({
+	user: {
+		nickname: defaultNickname,
+		color: userColor
+	},
 	tool: 'move',
 	elements: [],
 	selectedElements: [],
@@ -39,7 +46,23 @@ export const useCanvasStore = create<CanvasState & CanvasActions>()((set, get) =
 			color: userColor
 		}
 	},
-	setSettings: (settings) => set({ settings }),
+	members: [
+		{
+			nickname: defaultNickname,
+			color: userColor
+		}
+	],
+
+	setUser: (user) => set({ user }),
+
+	addMember: (member) => set((state) => ({
+		members: [...state.members, member]
+	})),
+
+	removeMember: (nickname) => set((state) => ({
+		members: state.members.filter(member => member.nickname !== nickname)
+	})),
+
 	setTool: (tool) => set({ tool }),
 
 	addElement: (element) => set((state) => ({

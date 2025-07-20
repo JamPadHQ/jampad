@@ -1,4 +1,8 @@
 import { CanvasState, Point } from '@/lib/types';
+import MembersList from './MembersList';
+import { Button } from './ui/button';
+import { MoonIcon } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
 
 interface CanvasOverlayProps {
 	canvasState: CanvasState;
@@ -12,6 +16,7 @@ export const CanvasOverlay = ({
 	canvasState,
 	actualPosition,
 }: CanvasOverlayProps) => {
+	const { theme, setTheme } = useTheme();
 	return (
 		<>
 			{/* Canvas Position Display */}
@@ -19,6 +24,14 @@ export const CanvasOverlay = ({
 				<span>X: {Math.round(actualPosition.x)}</span>
 				<span>Y: {Math.round(actualPosition.y)}</span>
 				<span>Zoom: {Math.round(canvasState.zoom * 100)}%</span>
+			</div>
+
+			<div className="absolute top-3 right-3 z-10 space-x-2">
+				<MembersList />
+				<Button variant='outline' size='icon' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+					<MoonIcon className='w-4 h-4' />
+					<span className='sr-only'>Toggle theme</span>
+				</Button>
 			</div>
 		</>
 	);
