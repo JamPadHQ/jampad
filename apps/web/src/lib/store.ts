@@ -1,11 +1,7 @@
 import { create } from 'zustand'
+import { Point } from '@/lib/types'
 
 type Tool = 'select' | 'move' | 'draw'
-
-interface Point {
-	x: number
-	y: number
-}
 
 interface DrawPath {
 	id: string
@@ -16,8 +12,8 @@ interface DrawPath {
 
 interface Element {
 	id: string
-	type: 'path' | 'shape' // expandable for future shapes
-	data: DrawPath // can be expanded to union type for different element types
+	type: 'path' | 'shape'
+	data: DrawPath
 }
 
 interface CanvasState {

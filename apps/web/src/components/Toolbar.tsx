@@ -1,5 +1,5 @@
 import { HandIcon, MousePointer2Icon, PenIcon } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { useCanvasStore } from '@/lib/store';
 
 function Toolbar() {

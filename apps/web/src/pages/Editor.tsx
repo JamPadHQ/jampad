@@ -1,5 +1,5 @@
 import Toolbar from '@/components/Toolbar';
-import InfiniteCanvas from '../components/InfiniteCanvas';
+import InfiniteCanvas from '@/components/Canvas';
 
 function Editor() {
 	return (
