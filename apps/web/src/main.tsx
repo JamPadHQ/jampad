@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from '@/components/ThemeProvider';
 import App from './App';
 
 import './styles.css';
@@ -13,8 +14,10 @@ const root = ReactDOM.createRoot(
 root.render(
 	<StrictMode>
 		<BrowserRouter>
-			<App />
-			<Toaster />
+			<ThemeProvider defaultTheme='dark'>
+				<App />
+				<Toaster />
+			</ThemeProvider>
 		</BrowserRouter>
 	</StrictMode>
 );
