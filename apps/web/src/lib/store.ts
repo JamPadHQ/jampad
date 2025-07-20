@@ -104,8 +104,8 @@ export const useCanvasStore = create<CanvasState & CanvasActions>()((set, get) =
 			data: {
 				id,
 				points: state.currentDrawing,
-				color: '#000000',
-				strokeWidth: 2
+				color: state.user.color,
+				strokeWidth: 5
 			}
 		}
 

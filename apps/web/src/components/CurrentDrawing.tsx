@@ -1,7 +1,7 @@
 import { useCanvasStore } from '@/lib/store';
 
 export const CurrentDrawing = () => {
-	const settings = useCanvasStore((state) => state.settings);
+	const user = useCanvasStore((state) => state.user);
 	const currentDrawing = useCanvasStore((state) => state.currentDrawing);
 
 	if (!currentDrawing || currentDrawing.length === 0) return null;
@@ -14,7 +14,7 @@ export const CurrentDrawing = () => {
 				cx={point.x}
 				cy={point.y}
 				r={2}
-				fill={settings.user.color}
+				fill={user.color}
 				opacity={0.8}
 			/>
 		);
@@ -30,12 +30,12 @@ export const CurrentDrawing = () => {
 	return (
 		<path
 			d={pathString}
-			stroke={settings.user.color}
+			stroke={user.color}
 			strokeWidth={5}
 			fill="none"
 			strokeLinecap="round"
 			strokeLinejoin="round"
-			opacity={0.8}
+			opacity={0.75}
 		/>
 	);
 }; 
