@@ -26,4 +26,20 @@ export interface CanvasBounds {
 	maxX: number;
 	minY: number;
 	maxY: number;
-} 
+}
+
+export type Tool = 'select' | 'move' | 'draw'
+
+
+export interface DrawPath {
+	id: string
+	points: Point[]
+	color: string
+	strokeWidth: number
+}
+
+export interface Element {
+	id: string
+	type: 'path' | 'shape'
+	data: DrawPath
+}

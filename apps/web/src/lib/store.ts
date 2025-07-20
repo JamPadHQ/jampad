@@ -1,20 +1,6 @@
 import { create } from 'zustand'
-import { Point } from '@/lib/types'
+import type { Element, Point, Tool } from '@/lib/types'
 
-type Tool = 'select' | 'move' | 'draw'
-
-interface DrawPath {
-	id: string
-	points: Point[]
-	color: string
-	strokeWidth: number
-}
-
-interface Element {
-	id: string
-	type: 'path' | 'shape'
-	data: DrawPath
-}
 
 interface CanvasState {
 	tool: Tool
@@ -37,7 +23,7 @@ interface CanvasActions {
 }
 
 export const useCanvasStore = create<CanvasState & CanvasActions>()((set, get) => ({
-	tool: 'select',
+	tool: 'move',
 	elements: [],
 	selectedElements: [],
 	currentDrawing: null,
