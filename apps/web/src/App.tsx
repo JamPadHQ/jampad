@@ -1,13 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Editor from './pages/Editor';
 
 function App() {
 	return (
-		<BrowserRouter>
-			<Routes>
-				<Route path="/room/:roomId" element={<Editor />} />
-			</Routes>
-		</BrowserRouter>
+		<Routes>
+			<Route path="/room/:roomId" element={<Editor />} />
+		</Routes>
 	);
 }
 

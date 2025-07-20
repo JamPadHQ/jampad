@@ -1,7 +1,9 @@
+import InfiniteCanvas from '../components/InfiniteCanvas';
+
 function Editor() {
 	return (
-		<div>
-			<h1>CanvasPage</h1>
+		<div className="w-full h-screen">
+			<InfiniteCanvas />
 		</div>
 	);
 }
