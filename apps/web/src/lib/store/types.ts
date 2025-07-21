@@ -14,6 +14,7 @@ export interface ToolSlice {
 export interface ElementsSlice {
 	elements: Element[]
 	selectedElements: string[]
+	editingStickyNoteId: string | null
 	addElement: (element: Element) => void
 	removeElement: (id: string) => void
 	updateElement: (id: string, element: Partial<Element>) => void
@@ -22,6 +23,7 @@ export interface ElementsSlice {
 	clearSelection: () => void
 	createStickyNote: (position: Point) => string
 	updateStickyNoteText: (id: string, text: string) => void
+	setEditingStickyNoteId: (id: string | null) => void
 }
 
 export interface DrawingSlice {

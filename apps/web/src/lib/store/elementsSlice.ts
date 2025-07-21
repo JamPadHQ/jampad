@@ -5,6 +5,7 @@ import type { CanvasStore, ElementsSlice } from './types'
 export const createElementsSlice: StateCreator<CanvasStore, [], [], ElementsSlice> = (set, get) => ({
 	elements: [],
 	selectedElements: [],
+	editingStickyNoteId: null,
 
 	addElement: (element) => set((state) => ({
 		elements: [...state.elements, element]
@@ -12,7 +13,8 @@ export const createElementsSlice: StateCreator<CanvasStore, [], [], ElementsSlic
 
 	removeElement: (id) => set((state) => ({
 		elements: state.elements.filter(el => el.id !== id),
-		selectedElements: state.selectedElements.filter(selectedId => selectedId !== id)
+		selectedElements: state.selectedElements.filter(selectedId => selectedId !== id),
+		editingStickyNoteId: state.editingStickyNoteId === id ? null : state.editingStickyNoteId
 	})),
 
 	updateElement: (id, updates) => set((state) => ({
@@ -26,6 +28,8 @@ export const createElementsSlice: StateCreator<CanvasStore, [], [], ElementsSlic
 	selectElements: (ids) => set({ selectedElements: ids }),
 
 	clearSelection: () => set({ selectedElements: [] }),
+
+	setEditingStickyNoteId: (id) => set({ editingStickyNoteId: id }),
 
 	createStickyNote: (position: Point) => {
 		const state = get()

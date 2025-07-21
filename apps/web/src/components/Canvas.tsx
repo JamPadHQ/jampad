@@ -46,6 +46,7 @@ function Canvas() {
 		isDrawing,
 		isSelecting,
 		handleMouseDown,
+		handleDoubleClick,
 		getCursor
 	} = useCanvasEvents({
 		containerRef: containerRef as React.RefObject<HTMLDivElement>,
@@ -83,6 +84,7 @@ function Canvas() {
 				ref={containerRef}
 				className="w-full h-full"
 				onMouseDown={handleMouseDown}
+				onDoubleClick={handleDoubleClick}
 				style={{ cursor: getCursor() }}
 			>
 				{/* Canvas Content */}

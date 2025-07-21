@@ -51,6 +51,8 @@ export const useCanvasEvents = ({
 	const selectElements = useCanvasStore((state) => state.selectElements);
 	const createStickyNote = useCanvasStore((state) => state.createStickyNote);
 	const setTool = useCanvasStore((state) => state.setTool);
+	const editingStickyNoteId = useCanvasStore((state) => state.editingStickyNoteId);
+	const setEditingStickyNoteId = useCanvasStore((state) => state.setEditingStickyNoteId);
 
 	// YJS for collaborative sticky note creation
 	const { createStickyNoteInYJS } = useYJS('default-room');
@@ -112,6 +114,10 @@ export const useCanvasEvents = ({
 					selectElements([stickyNoteId]);
 				}
 			} else {
+				// Clear editing state when clicking outside sticky notes
+				if (editingStickyNoteId) {
+					setEditingStickyNoteId(null);
+				}
 				// Start selection box
 				setIsSelecting(true);
 				onSelectionStart(canvasPos);
@@ -122,7 +128,19 @@ export const useCanvasEvents = ({
 			createStickyNoteInYJS(canvasPos);
 			setTool('select');
 		}
-	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getStickyNoteAtPoint, selectedElements, selectElements]);
+	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getStickyNoteAtPoint, selectedElements, selectElements, editingStickyNoteId, setEditingStickyNoteId]);
+
+	// Memoize double click handler
+	const handleDoubleClick = useCallback((e: React.MouseEvent) => {
+		const canvasPos = getCanvasPosition(e.clientX, e.clientY);
+
+		// Check if double-clicking on a sticky note
+		const stickyNoteId = getStickyNoteAtPoint(canvasPos);
+		if (stickyNoteId && tool === 'select') {
+			// Start editing the sticky note
+			setEditingStickyNoteId(stickyNoteId);
+		}
+	}, [tool, getCanvasPosition, getStickyNoteAtPoint, setEditingStickyNoteId]);
 
 	// Memoize mouse move handler
 	const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -224,6 +242,7 @@ export const useCanvasEvents = ({
 		isDrawing,
 		isSelecting,
 		handleMouseDown,
+		handleDoubleClick,
 		getCursor
 	};
 }; 

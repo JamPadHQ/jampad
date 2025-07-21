@@ -24,17 +24,20 @@ export const useSelection = () => {
 	const selectedElements = useCanvasStore((state) => state.selectedElements);
 	const selectElements = useCanvasStore((state) => state.selectElements);
 	const clearSelection = useCanvasStore((state) => state.clearSelection);
+	const setEditingStickyNoteId = useCanvasStore((state) => state.setEditingStickyNoteId);
 
 	const handleSelectionStart = useCallback((point: Point) => {
 		console.log('Starting selection at:', point);
 		clearSelection();
+		// Clear editing state when starting a new selection
+		setEditingStickyNoteId(null);
 		setSelectionBox({
 			startX: point.x,
 			startY: point.y,
 			endX: point.x,
 			endY: point.y
 		});
-	}, [clearSelection]);
+	}, [clearSelection, setEditingStickyNoteId]);
 
 	const handleSelectionMove = useCallback((point: Point) => {
 		setSelectionBox(prev => ({

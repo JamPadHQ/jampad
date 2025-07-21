@@ -20,11 +20,15 @@ const getBackgroundColor = (hexColor: string) => {
 };
 
 export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyNoteProps) => {
-	const [isEditing, setIsEditing] = useState(false);
 	const [text, setText] = useState(stickyNote.text);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const updateStickyNoteText = useCanvasStore((state) => state.updateStickyNoteText);
 	const { updateStickyNoteTextInYJS } = useYJS('default-room');
+
+	// Use store's editing state to prevent multiple sticky notes from editing simultaneously
+	const editingStickyNoteId = useCanvasStore((state) => state.editingStickyNoteId);
+	const setEditingStickyNoteId = useCanvasStore((state) => state.setEditingStickyNoteId);
+	const isEditing = editingStickyNoteId === stickyNote.id;
 
 	// Memoize computed values to prevent recalculation on every render
 	const backgroundColor = useMemo(() => getBackgroundColor(stickyNote.color), [stickyNote.color]);
@@ -43,12 +47,13 @@ export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyN
 		}
 	}, [stickyNote.text, isEditing]);
 
-	// Auto-focus when selected and not editing
+	// Handle when selection changes while editing
 	useEffect(() => {
-		if (isSelected && !isEditing) {
-			setIsEditing(true);
+		if (isEditing && !isSelected) {
+			// If this sticky note is no longer selected while editing, stop editing
+			setEditingStickyNoteId(null);
 		}
-	}, [isSelected, isEditing]);
+	}, [isSelected, isEditing, setEditingStickyNoteId]);
 
 	// Focus textarea when editing starts
 	useEffect(() => {
@@ -77,17 +82,10 @@ export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyN
 
 	// Update text in store when editing is done
 	const handleBlur = useCallback(() => {
-		setIsEditing(false);
+		setEditingStickyNoteId(null);
 		updateStickyNoteText(stickyNote.id, text);
 		updateStickyNoteTextInYJS(stickyNote.id, text);
-	}, [stickyNote.id, text, updateStickyNoteText, updateStickyNoteTextInYJS]);
-
-	// Handle double click to start editing
-	const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-		setIsEditing(true);
-	}, []);
+	}, [stickyNote.id, text, updateStickyNoteText, updateStickyNoteTextInYJS, setEditingStickyNoteId]);
 
 	// Handle key down events
 	const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -95,14 +93,16 @@ export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyN
 
 		if (e.key === 'Escape') {
 			setText(stickyNote.text); // Reset to original text
-			setIsEditing(false);
+			setEditingStickyNoteId(null);
+			// Blur the textarea to ensure proper cleanup
+			textareaRef.current?.blur();
 		} else if (e.key === 'Enter' && !e.shiftKey) {
 			// Save on Enter (but not Shift+Enter)
 			e.preventDefault();
 			handleBlur();
 		}
 		// Allow all other keys including space, backspace, etc.
-	}, [stickyNote.text, handleBlur]);
+	}, [stickyNote.text, handleBlur, setEditingStickyNoteId]);
 
 	// Handle text change with debounced store update
 	const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -134,7 +134,6 @@ export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyN
 				rx={8}
 				ry={8}
 				style={{ cursor: 'pointer' }}
-				onDoubleClick={handleDoubleClick}
 			/>
 
 			{/* Selection highlight */}
@@ -188,7 +187,6 @@ export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyN
 					) : (
 						<div
 							className="w-full h-full cursor-pointer select-none"
-							onDoubleClick={handleDoubleClick}
 							onMouseDown={handleMouseDown}
 							onMouseUp={handleMouseUp}
 							style={textStyle}
