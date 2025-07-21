@@ -15,8 +15,8 @@ root.render(
 	<StrictMode>
 		<BrowserRouter>
 			<ThemeProvider defaultTheme='dark'>
-				<App />
 				<Toaster />
+				<App />
 			</ThemeProvider>
 		</BrowserRouter>
 	</StrictMode>

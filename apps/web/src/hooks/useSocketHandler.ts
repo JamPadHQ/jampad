@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import { useEffect, useRef } from 'react';
 import { useCanvasStore } from '@/lib/store';
+import { toast } from 'sonner';
 
 export const useSocketHandler = () => {
 	const socket = useRef<Socket | null>(null);
@@ -18,9 +19,12 @@ export const useSocketHandler = () => {
 		// Connect to socket server
 		socket.current = io(import.meta.env.VITE_PUBLIC_API_ENDPOINT);
 
+		toast.loading('Connecting to server...', { id: 'socket-connection' });
+
 		// Connection events
 		socket.current.on('connect', () => {
 			setConnected(true);
+			toast.success('Connected to server', { id: 'socket-connection' });
 
 			// Join with current user nickname only once
 			if (!hasJoined.current) {
@@ -32,6 +36,8 @@ export const useSocketHandler = () => {
 		socket.current.on('disconnect', () => {
 			setConnected(false);
 			hasJoined.current = false;
+
+			toast.loading('Reconnecting to server...', { id: 'socket-connection', dismissible: false });
 		});
 
 		// User events
