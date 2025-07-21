@@ -4,7 +4,7 @@ import Editor from './pages/Editor';
 function App() {
 	return (
 		<Routes>
-			<Route path="/room/:roomId" element={<Editor />} />
+			<Route path="/" index element={<Editor />} />
 		</Routes>
 	);
 }
