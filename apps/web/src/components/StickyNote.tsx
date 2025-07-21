@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { useCanvasStore } from '@/lib/store';
+import { useYJS } from '@/hooks/useYJS';
 import { StickyNote as StickyNoteType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +24,7 @@ export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyN
 	const [text, setText] = useState(stickyNote.text);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const updateStickyNoteText = useCanvasStore((state) => state.updateStickyNoteText);
+	const { updateStickyNoteTextInYJS } = useYJS('default-room');
 
 	// Memoize computed values to prevent recalculation on every render
 	const backgroundColor = useMemo(() => getBackgroundColor(stickyNote.color), [stickyNote.color]);
@@ -66,17 +68,19 @@ export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyN
 				clearTimeout(timeoutId);
 				timeoutId = setTimeout(() => {
 					updateStickyNoteText(id, newText);
+					updateStickyNoteTextInYJS(id, newText);
 				}, 300); // 300ms debounce
 			};
 		})(),
-		[updateStickyNoteText]
+		[updateStickyNoteText, updateStickyNoteTextInYJS]
 	);
 
 	// Update text in store when editing is done
 	const handleBlur = useCallback(() => {
 		setIsEditing(false);
 		updateStickyNoteText(stickyNote.id, text);
-	}, [stickyNote.id, text, updateStickyNoteText]);
+		updateStickyNoteTextInYJS(stickyNote.id, text);
+	}, [stickyNote.id, text, updateStickyNoteText, updateStickyNoteTextInYJS]);
 
 	// Handle double click to start editing
 	const handleDoubleClick = useCallback((e: React.MouseEvent) => {

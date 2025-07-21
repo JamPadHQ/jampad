@@ -21,6 +21,8 @@ export const createElementsSlice: StateCreator<CanvasStore, [], [], ElementsSlic
 		)
 	})),
 
+	setElements: (elements) => set({ elements }),
+
 	selectElements: (ids) => set({ selectedElements: ids }),
 
 	clearSelection: () => set({ selectedElements: [] }),

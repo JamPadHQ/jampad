@@ -26,12 +26,12 @@ function Canvas() {
 		resetCanvas
 	} = useCanvasNavigation();
 
-	// Drawing functionality
+	// Drawing functionality with YJS
 	const {
 		handleDrawStart,
 		handleDrawMove,
 		handleDrawEnd
-	} = useDrawing();
+	} = useDrawing('default-room');
 
 	// Selection functionality
 	const {

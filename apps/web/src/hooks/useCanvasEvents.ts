@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useCanvasStore } from '@/lib/store';
+import { useYJS } from './useYJS';
 import { Point, CanvasState, DrawPath, StickyNote } from '@/lib/types';
 import { screenToCanvas } from '@/lib/canvasUtils';
 
@@ -50,6 +51,9 @@ export const useCanvasEvents = ({
 	const selectElements = useCanvasStore((state) => state.selectElements);
 	const createStickyNote = useCanvasStore((state) => state.createStickyNote);
 	const setTool = useCanvasStore((state) => state.setTool);
+
+	// YJS for collaborative sticky note creation
+	const { createStickyNoteInYJS } = useYJS('default-room');
 
 	// Memoize expensive computations
 	const getCanvasPosition = useCallback((clientX: number, clientY: number): Point => {
@@ -115,9 +119,10 @@ export const useCanvasEvents = ({
 		} else if (tool === 'sticky-note') {
 			// Create sticky note on click and switch back to select mode
 			createStickyNote(canvasPos);
+			createStickyNoteInYJS(canvasPos);
 			setTool('select');
 		}
-	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onSelectionStart, createStickyNote, setTool, getStickyNoteAtPoint, selectedElements, selectElements]);
+	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getStickyNoteAtPoint, selectedElements, selectElements]);
 
 	// Memoize mouse move handler
 	const handleMouseMove = useCallback((e: MouseEvent) => {

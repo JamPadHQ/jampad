@@ -17,6 +17,7 @@ export interface ElementsSlice {
 	addElement: (element: Element) => void
 	removeElement: (id: string) => void
 	updateElement: (id: string, element: Partial<Element>) => void
+	setElements: (elements: Element[]) => void
 	selectElements: (ids: string[]) => void
 	clearSelection: () => void
 	createStickyNote: (position: Point) => string

@@ -1,9 +1,10 @@
 import Toolbar from '@/components/Toolbar';
 import InfiniteCanvas from '@/components/Canvas';
-import { useSocketHandler } from '@/hooks/useSocketHandler';
+import { useYJS } from '@/hooks/useYJS';
 
 function Editor() {
-	useSocketHandler();
+	// Initialize YJS with a default room
+	useYJS('default-room');
 
 	return (
 		<div className="w-full h-screen">

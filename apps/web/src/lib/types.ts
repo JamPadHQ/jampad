@@ -56,6 +56,7 @@ export interface Element {
 export interface Member {
 	nickname: string
 	color: string
+	sessionId: string
 }
 
 export type Settings = {}
