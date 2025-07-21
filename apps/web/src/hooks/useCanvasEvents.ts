@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useCanvasStore } from '@/lib/store';
 import { useYJS } from './useYJS';
 import { Point, CanvasState, DrawPath, StickyNote } from '@/lib/types';

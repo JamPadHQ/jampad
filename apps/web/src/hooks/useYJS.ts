@@ -16,15 +16,19 @@ export const useYJS = (roomId: string = 'default-room') => {
 		user,
 		setConnected,
 		updateMembers,
-		setUser,
-		addElement,
-		removeElement,
-		updateElement,
 		setElements
 	} = useCanvasStore();
 
 	const connect = useCallback(() => {
 		if (doc.current || isConnecting.current) return;
+
+		// Check if already connected
+		const currentState = useCanvasStore.getState();
+		if (currentState.isConnected) return;
+
+		// Check if provider exists and is connected
+		if (provider.current && provider.current.wsconnected) return;
+
 		isConnecting.current = true;
 
 		// Create YJS document
@@ -41,7 +45,10 @@ export const useYJS = (roomId: string = 'default-room') => {
 			doc.current
 		);
 
-		toast.loading('Connecting to server...', { id: 'yjs-connection' });
+		toast.loading('Connecting to server...', {
+			id: 'yjs-connection',
+			duration: 2000 // Auto-dismiss after 2 seconds
+		});
 
 		// Set local awareness state for this user
 		provider.current.awareness.setLocalStateField('user', {
@@ -78,8 +85,8 @@ export const useYJS = (roomId: string = 'default-room') => {
 		provider.current.on('status', ({ status }: { status: string }) => {
 			if (status === 'connected') {
 				setConnected(true);
-				toast.success('Connected to server', { id: 'yjs-connection' });
 				isConnecting.current = false;
+				toast.dismiss('yjs-connection');
 			} else if (status === 'disconnected') {
 				setConnected(false);
 				toast.loading('Reconnecting to server...', { id: 'yjs-connection', dismissible: false });
@@ -125,7 +132,11 @@ export const useYJS = (roomId: string = 'default-room') => {
 	}, [setConnected]);
 
 	useEffect(() => {
-		connect();
+		// Only connect if not already connected
+		const currentState = useCanvasStore.getState();
+		if (!currentState.isConnected && !doc.current && !isConnecting.current) {
+			connect();
+		}
 
 		// Clean up on tab close/reload
 		const handleUnload = () => {
