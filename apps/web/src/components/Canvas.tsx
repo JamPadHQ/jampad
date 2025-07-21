@@ -48,7 +48,7 @@ function Canvas() {
 		handleMouseDown,
 		getCursor
 	} = useCanvasEvents({
-		containerRef,
+		containerRef: containerRef as React.RefObject<HTMLDivElement>,
 		canvasState,
 		isDragging,
 		startDragging,
