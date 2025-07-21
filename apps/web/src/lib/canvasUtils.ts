@@ -72,6 +72,25 @@ export const isPointInSelection = (
 };
 
 /**
+ * Check if a rectangle intersects with a selection box
+ */
+export const isRectangleInSelection = (
+	rectX: number,
+	rectY: number,
+	rectWidth: number,
+	rectHeight: number,
+	selectionBox: SelectionBox
+): boolean => {
+	const { minX, maxX, minY, maxY } = getNormalizedSelectionBox(selectionBox);
+
+	// Check if rectangles overlap
+	const rectRight = rectX + rectWidth;
+	const rectBottom = rectY + rectHeight;
+
+	return !(rectX > maxX || rectRight < minX || rectY > maxY || rectBottom < minY);
+};
+
+/**
  * Generate canvas transform CSS string
  */
 export const getCanvasTransform = (canvasState: CanvasState): string => {

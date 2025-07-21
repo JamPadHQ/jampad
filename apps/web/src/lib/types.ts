@@ -28,7 +28,7 @@ export interface CanvasBounds {
 	maxY: number;
 }
 
-export type Tool = 'select' | 'move' | 'draw'
+export type Tool = 'select' | 'move' | 'draw' | 'sticky-note'
 
 
 export interface DrawPath {
@@ -38,10 +38,19 @@ export interface DrawPath {
 	strokeWidth: number
 }
 
+export interface StickyNote {
+	id: string
+	position: Point
+	text: string
+	color: string
+	width: number
+	height: number
+}
+
 export interface Element {
 	id: string
-	type: 'path' | 'shape'
-	data: DrawPath
+	type: 'path' | 'sticky-note'
+	data: DrawPath | StickyNote
 }
 
 export interface Member {

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Element, Member, Point, Tool } from '@/lib/types'
+import type { Element, Member, Point, Tool, StickyNote } from '@/lib/types'
 import generateRandomUsername from "generate-random-username"
 
 const defaultNickname = generateRandomUsername({ separator: '-' })
@@ -26,6 +26,8 @@ interface CanvasActions {
 	addDrawingPoint: (point: Point) => void
 	finishDrawing: () => string | null // returns id of created element
 	cancelDrawing: () => void
+	createStickyNote: (position: Point) => string // returns id of created sticky note
+	updateStickyNoteText: (id: string, text: string) => void
 	addMember: (member: Member) => void
 	removeMember: (nickname: string) => void
 	setConnected: (connected: boolean) => void
@@ -112,5 +114,48 @@ export const useCanvasStore = create<CanvasState & CanvasActions>()((set, get) =
 		return id
 	},
 
-	cancelDrawing: () => set({ currentDrawing: null })
+	cancelDrawing: () => set({ currentDrawing: null }),
+
+	createStickyNote: (position: Point) => {
+		const state = get()
+		const id = `sticky_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+		const stickyNote: StickyNote = {
+			id,
+			position,
+			text: '',
+			color: state.user.color,
+			width: 200,
+			height: 150
+		}
+
+		const element: Element = {
+			id,
+			type: 'sticky-note',
+			data: stickyNote
+		}
+
+		set((state) => ({
+			elements: [...state.elements, element],
+			selectedElements: [id] // Select the newly created sticky note
+		}))
+
+		return id
+	},
+
+	updateStickyNoteText: (id: string, text: string) => {
+		set((state) => ({
+			elements: state.elements.map(el => {
+				if (el.id === id && el.type === 'sticky-note') {
+					return {
+						...el,
+						data: {
+							...el.data,
+							text
+						}
+					}
+				}
+				return el
+			})
+		}))
+	}
 }))

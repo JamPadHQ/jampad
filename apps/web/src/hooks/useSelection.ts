@@ -1,7 +1,16 @@
 import { useState, useCallback } from 'react';
 import { useCanvasStore } from '@/lib/store';
-import { SelectionBox, Point } from '../lib/types';
-import { getNormalizedSelectionBox, isPointInSelection } from '../lib/canvasUtils';
+import { SelectionBox, Point, DrawPath, StickyNote } from '../lib/types';
+import { isPointInSelection, isRectangleInSelection } from '../lib/canvasUtils';
+
+// Type guards
+const isDrawPath = (data: DrawPath | StickyNote): data is DrawPath => {
+	return 'points' in data;
+};
+
+const isStickyNote = (data: DrawPath | StickyNote): data is StickyNote => {
+	return 'position' in data && 'text' in data;
+};
 
 export const useSelection = () => {
 	const [selectionBox, setSelectionBox] = useState<SelectionBox>({
@@ -40,13 +49,26 @@ export const useSelection = () => {
 		const selectedIds: string[] = [];
 
 		elements.forEach(element => {
-			if (element.type === 'path') {
+			if (element.type === 'path' && isDrawPath(element.data)) {
 				const pathData = element.data;
 				// Check if any point of the path is within the selection box
 				const hasPointInSelection = pathData.points.some(point =>
 					isPointInSelection(point, selectionBox)
 				);
 				if (hasPointInSelection) {
+					selectedIds.push(element.id);
+				}
+			} else if (element.type === 'sticky-note' && isStickyNote(element.data)) {
+				const stickyNoteData = element.data;
+				// Check if the sticky note rectangle intersects with the selection box
+				const isInSelection = isRectangleInSelection(
+					stickyNoteData.position.x,
+					stickyNoteData.position.y,
+					stickyNoteData.width,
+					stickyNoteData.height,
+					selectionBox
+				);
+				if (isInSelection) {
 					selectedIds.push(element.id);
 				}
 			}

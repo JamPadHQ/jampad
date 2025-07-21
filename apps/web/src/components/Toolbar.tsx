@@ -1,4 +1,4 @@
-import { HandIcon, MicOffIcon, MonitorIcon, MousePointer2Icon, PenIcon, Settings2Icon, VideoIcon } from 'lucide-react';
+import { HandIcon, MicOffIcon, MonitorIcon, MousePointer2Icon, PenIcon, Settings2Icon, StickyNoteIcon, VideoIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCanvasStore } from '@/lib/store';
 import type { Tool } from '@/lib/types';
@@ -17,6 +17,10 @@ const TOOLS: { icon: React.ElementType, tool: Tool }[] = [
 	{
 		icon: PenIcon,
 		tool: 'draw'
+	},
+	{
+		icon: StickyNoteIcon,
+		tool: 'sticky-note'
 	}
 ]
 
