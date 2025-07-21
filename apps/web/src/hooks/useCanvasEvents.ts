@@ -1,19 +1,19 @@
-import { useEffect, useCallback, useState, RefObject } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useCanvasStore } from '@/lib/store';
+import { Point, CanvasState, DrawPath, StickyNote } from '@/lib/types';
 import { screenToCanvas } from '@/lib/canvasUtils';
-import { CanvasState, Point, DrawPath, StickyNote } from '@/lib/types';
 
-// Type guards
+// Type guard for sticky notes
 const isStickyNote = (data: DrawPath | StickyNote): data is StickyNote => {
 	return 'position' in data && 'text' in data;
 };
 
 interface UseCanvasEventsProps {
-	containerRef: RefObject<HTMLDivElement | null>;
+	containerRef: React.RefObject<HTMLDivElement>;
 	canvasState: CanvasState;
 	isDragging: boolean;
-	startDragging: (x: number, y: number) => void;
-	updateDragging: (x: number, y: number) => void;
+	startDragging: (clientX: number, clientY: number) => void;
+	updateDragging: (clientX: number, clientY: number) => void;
 	stopDragging: () => void;
 	handleZoom: (mouseX: number, mouseY: number, deltaY: number) => void;
 	onDrawStart: (point: Point) => void;
@@ -43,6 +43,7 @@ export const useCanvasEvents = ({
 	const [isDrawing, setIsDrawing] = useState(false);
 	const [isSelecting, setIsSelecting] = useState(false);
 
+	// Selective store subscriptions to prevent unnecessary re-renders
 	const tool = useCanvasStore((state) => state.tool);
 	const elements = useCanvasStore((state) => state.elements);
 	const selectedElements = useCanvasStore((state) => state.selectedElements);
@@ -50,14 +51,14 @@ export const useCanvasEvents = ({
 	const createStickyNote = useCanvasStore((state) => state.createStickyNote);
 	const setTool = useCanvasStore((state) => state.setTool);
 
-	// Convert screen coordinates to canvas coordinates
+	// Memoize expensive computations
 	const getCanvasPosition = useCallback((clientX: number, clientY: number): Point => {
 		const rect = containerRef.current?.getBoundingClientRect();
 		if (!rect) return { x: 0, y: 0 };
 		return screenToCanvas(clientX, clientY, canvasState, rect);
 	}, [containerRef, canvasState]);
 
-	// Check if a point is inside a sticky note
+	// Memoize sticky note lookup to avoid recalculation
 	const getStickyNoteAtPoint = useCallback((point: Point): string | null => {
 		for (let i = elements.length - 1; i >= 0; i--) {
 			const element = elements[i];
@@ -74,14 +75,14 @@ export const useCanvasEvents = ({
 		return null;
 	}, [elements]);
 
-	// Check if we're currently editing a sticky note
+	// Memoize editing check
 	const isEditingStickyNote = useCallback(() => {
 		// Check if any textarea is focused
 		const activeElement = document.activeElement;
 		return activeElement && activeElement.tagName === 'TEXTAREA';
 	}, []);
 
-	// Handle mouse down events
+	// Memoize mouse down handler
 	const handleMouseDown = useCallback((e: React.MouseEvent) => {
 		const canvasPos = getCanvasPosition(e.clientX, e.clientY);
 
@@ -118,7 +119,7 @@ export const useCanvasEvents = ({
 		}
 	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onSelectionStart, createStickyNote, setTool, getStickyNoteAtPoint, selectedElements, selectElements]);
 
-	// Handle mouse move events
+	// Memoize mouse move handler
 	const handleMouseMove = useCallback((e: MouseEvent) => {
 		if (isDragging && (tool === 'move' || isSpacePressed)) {
 			updateDragging(e.clientX, e.clientY);
@@ -131,7 +132,7 @@ export const useCanvasEvents = ({
 		}
 	}, [isDragging, isDrawing, isSelecting, tool, isSpacePressed, updateDragging, getCanvasPosition, onDrawMove, onSelectionMove]);
 
-	// Handle mouse up events
+	// Memoize mouse up handler
 	const handleMouseUp = useCallback(() => {
 		if (isDrawing) {
 			onDrawEnd();
@@ -146,7 +147,7 @@ export const useCanvasEvents = ({
 		stopDragging();
 	}, [isDrawing, isSelecting, onDrawEnd, onSelectionEnd, stopDragging]);
 
-	// Handle wheel events for zooming
+	// Memoize wheel handler
 	const handleWheel = useCallback((e: WheelEvent) => {
 		e.preventDefault();
 
@@ -159,7 +160,7 @@ export const useCanvasEvents = ({
 		handleZoom(mouseX, mouseY, e.deltaY);
 	}, [containerRef, handleZoom]);
 
-	// Handle keyboard events for space key
+	// Memoize keyboard handlers
 	const handleKeyDown = useCallback((e: KeyboardEvent) => {
 		// Don't handle keyboard events if we're editing a sticky note
 		if (isEditingStickyNote()) {
@@ -184,7 +185,7 @@ export const useCanvasEvents = ({
 		}
 	}, [isEditingStickyNote]);
 
-	// Get cursor style based on current state
+	// Memoize cursor style computation
 	const getCursor = useCallback((): string => {
 		if (isDragging) return 'grabbing';
 		if (isSpacePressed || tool === 'move') return 'grab';
@@ -193,7 +194,7 @@ export const useCanvasEvents = ({
 		return 'default'; // select tool
 	}, [isDragging, isSpacePressed, tool]);
 
-	// Set up event listeners
+	// Set up event listeners with memoized handlers
 	useEffect(() => {
 		const container = containerRef.current;
 		if (!container) return;

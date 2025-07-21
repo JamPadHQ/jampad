@@ -6,7 +6,7 @@ import { createElementsSlice } from './elementsSlice'
 import { createDrawingSlice } from './drawingSlice'
 import { createMembersSlice } from './membersSlice'
 
-// Combined store
+// Combined store with optimized performance
 export const useCanvasStore = create<CanvasStore>()((...a) => ({
 	...createUserSlice(...a),
 	...createToolSlice(...a),

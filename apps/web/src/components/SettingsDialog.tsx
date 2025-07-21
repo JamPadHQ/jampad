@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { z } from "zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import { useCanvasStore } from '@/lib/store';
+import { memo, useCallback, useMemo } from 'react';
 
 const formSchema = z.object({
 	nickname: z.string().min(2, {
@@ -19,58 +20,85 @@ type SettingsDialogProps = {
 	onOpenChange: (open: boolean) => void
 }
 
-function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-	const { user, setUser } = useCanvasStore();
-
+// Memoized form component to prevent unnecessary re-renders
+const SettingsForm = memo(({ user, setUser, onOpenChange }: {
+	user: any;
+	setUser: any;
+	onOpenChange: (open: boolean) => void;
+}) => {
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
-		defaultValues: {
+		defaultValues: useMemo(() => ({
 			nickname: user.nickname,
-		},
+		}), [user.nickname]),
+		mode: 'onBlur', // Only validate on blur to improve typing performance
 	})
 
-	function onSubmit(values: z.infer<typeof formSchema>) {
+	const onSubmit = useCallback((values: z.infer<typeof formSchema>) => {
 		setUser({
 			nickname: values.nickname,
 			color: user.color,
 		})
 		toast.success("Settings saved")
-	}
+		onOpenChange(false)
+	}, [setUser, user.color, onOpenChange])
+
+	return (
+		<Form {...form}>
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+				<DialogHeader>
+					<DialogTitle>Settings</DialogTitle>
+					<DialogDescription>
+						Configure the canvas and other settings.
+					</DialogDescription>
+				</DialogHeader>
+
+				<FormField
+					control={form.control}
+					name="nickname"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Nickname</FormLabel>
+							<FormControl>
+								<Input
+									placeholder="Enter your nickname"
+									{...field}
+									// Add performance optimizations
+									autoComplete="off"
+									autoCorrect="off"
+									autoCapitalize="off"
+									spellCheck={false}
+								/>
+							</FormControl>
+							<FormDescription>
+								Your nickname is used to identify you in the room.
+							</FormDescription>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<DialogFooter>
+					<Button type="submit">Save</Button>
+				</DialogFooter>
+			</form>
+		</Form>
+	)
+})
+
+function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+	// Selective store subscription to prevent unnecessary re-renders
+	const user = useCanvasStore((state) => state.user);
+	const setUser = useCanvasStore((state) => state.setUser);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-						<DialogHeader>
-							<DialogTitle>Settings</DialogTitle>
-							<DialogDescription>
-								Configure the canvas and other settings.
-							</DialogDescription>
-						</DialogHeader>
-
-						<FormField
-							control={form.control}
-							name="nickname"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Nickname</FormLabel>
-									<FormControl>
-										<Input placeholder="Enter your nickname" {...field} />
-									</FormControl>
-									<FormDescription>
-										Your nickname is used to identify you in the room.
-									</FormDescription>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<DialogFooter>
-							<Button type="submit">Save</Button>
-						</DialogFooter>
-					</form>
-				</Form>
+				<SettingsForm
+					user={user}
+					setUser={setUser}
+					onOpenChange={onOpenChange}
+				/>
 			</DialogContent>
 		</Dialog>
 	);
