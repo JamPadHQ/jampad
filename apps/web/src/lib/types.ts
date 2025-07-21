@@ -28,7 +28,7 @@ export interface CanvasBounds {
 	maxY: number;
 }
 
-export type Tool = 'select' | 'move' | 'draw' | 'sticky-note'
+export type Tool = 'select' | 'move' | 'draw' | 'sticky-note' | 'shape-rectangle' | 'shape-circle' | 'shape-triangle'
 
 
 export interface DrawPath {
