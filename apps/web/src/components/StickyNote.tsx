@@ -129,15 +129,15 @@ export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyN
 				width={stickyNote.width}
 				height={stickyNote.height}
 				fill={backgroundColor}
-				stroke={isSelected ? '#3b82f6' : stickyNote.color}
-				strokeWidth={isSelected ? 2 : 1}
+				stroke={isSelected && !isEditing ? '#3b82f6' : stickyNote.color}
+				strokeWidth={isSelected && !isEditing ? 2 : 1}
 				rx={8}
 				ry={8}
 				style={{ cursor: 'pointer' }}
 			/>
 
 			{/* Selection highlight */}
-			{isSelected && (
+			{isSelected && !isEditing && (
 				<rect
 					width={stickyNote.width}
 					height={stickyNote.height}
@@ -186,7 +186,7 @@ export const StickyNote = memo(({ stickyNote, isSelected, canvasState }: StickyN
 						/>
 					) : (
 						<div
-							className="w-full h-full cursor-pointer select-none"
+							className="w-full h-full cursor-pointer select-none whitespace-pre-wrap"
 							onMouseDown={handleMouseDown}
 							onMouseUp={handleMouseUp}
 							style={textStyle}
