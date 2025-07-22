@@ -6,6 +6,7 @@ export const createShapeSlice: StateCreator<CanvasStore, [], [], ShapeSlice> = (
 	currentShape: null,
 
 	startShape: (point, tool) => {
+		get().clearSelection();
 		const shapeType = tool.split('-')[1];
 		if (!shapeType) return;
 

@@ -9,6 +9,7 @@ import { CanvasElements } from '@/components/CanvasElements';
 import { CurrentDrawing } from '@/components/CurrentDrawing';
 import { CurrentShape } from '@/components/CurrentShape';
 import { SelectionBox } from '@/components/SelectionBox';
+import { SelectionHandles } from '@/components/SelectionHandles';
 import { CanvasOverlay } from '@/components/CanvasOverlay';
 import { getCanvasTransform, getActualCanvasPosition } from '@/lib/canvasUtils';
 import { CANVAS_CONSTANTS } from '@/lib/constants';
@@ -55,6 +56,7 @@ function Canvas() {
 		isDrawing,
 		isDrawingShape,
 		isSelecting,
+		isTransforming,
 		handleMouseDown,
 		handleDoubleClick,
 		getCursor
@@ -91,6 +93,7 @@ function Canvas() {
 				isDrawing={isDrawing}
 				isDrawingShape={isDrawingShape}
 				isSelecting={isSelecting}
+				isTransforming={isTransforming}
 			/>
 
 			{/* Canvas Container */}
@@ -137,6 +140,9 @@ function Canvas() {
 							canvasState={canvasState}
 							isSelecting={isSelecting}
 						/>
+
+						{/* Selection handles */}
+						<SelectionHandles canvasState={canvasState} />
 					</svg>
 				</div>
 			</div>

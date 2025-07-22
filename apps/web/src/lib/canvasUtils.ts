@@ -1,4 +1,4 @@
-import { CanvasState, Point, SelectionBox } from './types';
+import { CanvasState, Point, SelectionBox, DrawPath, StickyNote, Shape, Element } from './types';
 
 /**
  * Convert screen coordinates to canvas coordinates
@@ -106,6 +106,46 @@ export const getActualCanvasPosition = (canvasState: CanvasState): Point => {
 		y: -canvasState.y / canvasState.zoom
 	};
 };
+
+export const getElementBounds = (element: Element): { x: number; y: number; width: number; height: number } | null => {
+	if (element.type === 'path') {
+		const pathData = element.data as DrawPath;
+		if (pathData.points.length === 0) return null;
+		let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+		pathData.points.forEach(p => {
+			minX = Math.min(minX, p.x);
+			minY = Math.min(minY, p.y);
+			maxX = Math.max(maxX, p.x);
+			maxY = Math.max(maxY, p.y);
+		});
+		return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+	} else if (element.type === 'sticky-note') {
+		const stickyNoteData = element.data as StickyNote;
+		return { x: stickyNoteData.position.x, y: stickyNoteData.position.y, width: stickyNoteData.width, height: stickyNoteData.height };
+	} else if (element.type === 'shape') {
+		const shapeData = element.data as Shape;
+		const { start, end, type } = shapeData;
+
+		if (type === 'rectangle') {
+			return createRectangle(start, end);
+		} else if (type === 'circle') {
+			const { cx, cy, r } = createCircle(start, end);
+			return { x: cx - r, y: cy - r, width: r * 2, height: r * 2 };
+		} else if (type === 'triangle') {
+			const pointsStr = createTriangle(start, end);
+			const points = pointsStr.split(' ').map(pStr => {
+				const [x, y] = pStr.split(',').map(Number);
+				return { x, y };
+			});
+			const minX = Math.min(...points.map(p => p.x));
+			const minY = Math.min(...points.map(p => p.y));
+			const maxX = Math.max(...points.map(p => p.x));
+			const maxY = Math.max(...points.map(p => p.y));
+			return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+		}
+	}
+	return null;
+}
 
 /**
  * Create a rectangle SVG path from two points

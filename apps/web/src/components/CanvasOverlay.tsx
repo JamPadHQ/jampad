@@ -11,6 +11,7 @@ interface CanvasOverlayProps {
 	isDrawing: boolean;
 	isDrawingShape: boolean;
 	isSelecting: boolean;
+	isTransforming: boolean;
 }
 
 export const CanvasOverlay = ({
@@ -19,6 +20,7 @@ export const CanvasOverlay = ({
 	isDrawing,
 	isDrawingShape,
 	isSelecting,
+	isTransforming,
 }: CanvasOverlayProps) => {
 	const { theme, setTheme } = useTheme();
 	return (
@@ -31,6 +33,7 @@ export const CanvasOverlay = ({
 				<span>Drawing: {isDrawing ? 'Yes' : 'No'}</span>
 				<span>Drawing Shape: {isDrawingShape ? 'Yes' : 'No'}</span>
 				<span>Selecting: {isSelecting ? 'Yes' : 'No'}</span>
+				<span>Transforming: {isTransforming ? 'Yes' : 'No'}</span>
 			</div>
 
 			<div className="absolute top-3 right-3 z-10 space-x-2">

@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useCanvasStore } from '@/lib/store';
 import { useYJS } from './useYJS';
+import { useElementTransform } from './useElementTransform';
 import { Point, CanvasState, DrawPath, StickyNote, Shape } from '@/lib/types';
-import { screenToCanvas } from '@/lib/canvasUtils';
+import { screenToCanvas, getElementBounds } from '@/lib/canvasUtils';
 
 // Type guard for sticky notes
 const isStickyNote = (data: DrawPath | StickyNote | Shape): data is StickyNote => {
@@ -55,6 +56,7 @@ export const useCanvasEvents = ({
 	const [isDrawing, setIsDrawing] = useState(false);
 	const [isDrawingShape, setIsDrawingShape] = useState(false);
 	const [isSelecting, setIsSelecting] = useState(false);
+	const [isTransforming, setIsTransforming] = useState(false);
 
 	// Selective store subscriptions to prevent unnecessary re-renders
 	const tool = useCanvasStore((state) => state.tool);
@@ -68,6 +70,9 @@ export const useCanvasEvents = ({
 
 	// YJS for collaborative sticky note creation
 	const { createStickyNoteInYJS } = useYJS('default-room');
+
+	// Element transform hook
+	const { startTransform, handleTransform, endTransform, activeHandle } = useElementTransform();
 
 	// Memoize expensive computations
 	const getCanvasPosition = useCallback((clientX: number, clientY: number): Point => {
@@ -123,6 +128,14 @@ export const useCanvasEvents = ({
 	const handleMouseDown = useCallback((e: React.MouseEvent) => {
 		const canvasPos = getCanvasPosition(e.clientX, e.clientY);
 
+		// Check if clicking on a resize handle
+		const handle = (e.target as HTMLElement).dataset.handle;
+		if (handle && selectedElements.length > 0) {
+			setIsTransforming(true);
+			startTransform(handle as any, canvasPos);
+			return;
+		}
+
 		if (tool === 'move' || isSpacePressed) {
 			startDragging(e.clientX, e.clientY);
 		} else if (tool === 'draw') {
@@ -132,6 +145,20 @@ export const useCanvasEvents = ({
 			setIsDrawingShape(true);
 			onShapeStart(canvasPos);
 		} else if (tool === 'select') {
+			// Check if clicking on a selected element to move it
+			const selectedElementClicked = selectedElements.some(id => {
+				const element = elements.find(el => el.id === id);
+				if (!element) return false;
+				const bounds = getElementBounds(element);
+				return bounds && canvasPos.x >= bounds.x && canvasPos.x <= bounds.x + bounds.width && canvasPos.y >= bounds.y && canvasPos.y <= bounds.y + bounds.height;
+			});
+
+			if (selectedElementClicked) {
+				setIsTransforming(true);
+				startTransform('move', canvasPos);
+				return;
+			}
+
 			// Check if clicking on a shape
 			const shapeId = getShapeAtPoint(canvasPos);
 			if (shapeId) {
@@ -177,7 +204,7 @@ export const useCanvasEvents = ({
 			createStickyNoteInYJS(canvasPos);
 			setTool('select');
 		}
-	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onShapeStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getShapeAtPoint, getStickyNoteAtPoint, selectedElements, selectElements, editingStickyNoteId, setEditingStickyNoteId]);
+	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onShapeStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getShapeAtPoint, getStickyNoteAtPoint, selectedElements, selectElements, editingStickyNoteId, setEditingStickyNoteId, startTransform, elements]);
 
 	// Memoize double click handler
 	const handleDoubleClick = useCallback((e: React.MouseEvent) => {
@@ -193,6 +220,13 @@ export const useCanvasEvents = ({
 
 	// Memoize mouse move handler
 	const handleMouseMove = useCallback((e: MouseEvent) => {
+		const canvasPos = getCanvasPosition(e.clientX, e.clientY);
+
+		if (isTransforming) {
+			handleTransform(canvasPos);
+			return;
+		}
+
 		if (isDragging && (tool === 'move' || isSpacePressed)) {
 			updateDragging(e.clientX, e.clientY);
 		} else if (isDrawing && tool === 'draw') {
@@ -205,10 +239,15 @@ export const useCanvasEvents = ({
 			const canvasPos = getCanvasPosition(e.clientX, e.clientY);
 			onSelectionMove(canvasPos);
 		}
-	}, [isDragging, isDrawing, isDrawingShape, isSelecting, tool, isSpacePressed, updateDragging, getCanvasPosition, onDrawMove, onShapeMove, onSelectionMove]);
+	}, [isDragging, isDrawing, isDrawingShape, isSelecting, isTransforming, tool, isSpacePressed, updateDragging, getCanvasPosition, onDrawMove, onShapeMove, onSelectionMove, handleTransform]);
 
 	// Memoize mouse up handler
 	const handleMouseUp = useCallback(() => {
+		if (isTransforming) {
+			endTransform();
+			setIsTransforming(false);
+		}
+
 		if (isDrawing) {
 			onDrawEnd();
 			setIsDrawing(false);
@@ -225,7 +264,7 @@ export const useCanvasEvents = ({
 		}
 
 		stopDragging();
-	}, [isDrawing, isDrawingShape, isSelecting, onDrawEnd, onShapeEnd, onSelectionEnd, stopDragging]);
+	}, [isDrawing, isDrawingShape, isSelecting, isTransforming, onDrawEnd, onShapeEnd, onSelectionEnd, stopDragging, endTransform]);
 
 	// Memoize wheel handler
 	const handleWheel = useCallback((e: WheelEvent) => {
@@ -267,13 +306,17 @@ export const useCanvasEvents = ({
 
 	// Memoize cursor style computation
 	const getCursor = useCallback((): string => {
+		if (activeHandle) {
+			if (activeHandle === 'move') return 'move';
+			return `${activeHandle}-resize`;
+		}
 		if (isDragging) return 'grabbing';
 		if (isSpacePressed || tool === 'move') return 'grab';
 		if (tool === 'draw') return 'crosshair';
 		if (tool.startsWith('shape-')) return 'crosshair';
 		if (tool === 'sticky-note') return 'crosshair';
 		return 'default'; // select tool
-	}, [isDragging, isSpacePressed, tool]);
+	}, [isDragging, isSpacePressed, tool, activeHandle]);
 
 	// Set up event listeners with memoized handlers
 	useEffect(() => {
@@ -300,6 +343,7 @@ export const useCanvasEvents = ({
 		isDrawing,
 		isDrawingShape,
 		isSelecting,
+		isTransforming,
 		handleMouseDown,
 		handleDoubleClick,
 		getCursor
