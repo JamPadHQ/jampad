@@ -10,8 +10,9 @@ interface SelectionHandlesProps {
 export const SelectionHandles: React.FC<SelectionHandlesProps> = ({ canvasState }) => {
 	const selectedElements = useCanvasStore((state) => state.selectedElements);
 	const elements = useCanvasStore((state) => state.elements);
+	const editingStickyNoteId = useCanvasStore((state) => state.editingStickyNoteId);
 
-	if (selectedElements.length === 0) return null;
+	if (selectedElements.length === 0 || editingStickyNoteId) return null;
 
 	const selectedObjects = selectedElements.map(id => elements.find(el => el.id === id)).filter(Boolean) as any[];
 
