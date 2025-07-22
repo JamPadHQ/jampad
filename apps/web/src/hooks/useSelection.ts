@@ -1,15 +1,19 @@
 import { useState, useCallback } from 'react';
 import { useCanvasStore } from '@/lib/store';
-import { SelectionBox, Point, DrawPath, StickyNote } from '../lib/types';
-import { isPointInSelection, isRectangleInSelection } from '../lib/canvasUtils';
+import { SelectionBox, Point, DrawPath, StickyNote, Shape } from '../lib/types';
+import { isPointInSelection, isRectangleInSelection, createRectangle, createCircle, createTriangle } from '../lib/canvasUtils';
 
 // Type guards
-const isDrawPath = (data: DrawPath | StickyNote): data is DrawPath => {
+const isDrawPath = (data: DrawPath | StickyNote | Shape): data is DrawPath => {
 	return 'points' in data;
 };
 
-const isStickyNote = (data: DrawPath | StickyNote): data is StickyNote => {
+const isStickyNote = (data: DrawPath | StickyNote | Shape): data is StickyNote => {
 	return 'position' in data && 'text' in data;
+};
+
+const isShape = (data: DrawPath | StickyNote | Shape): data is Shape => {
+	return 'start' in data && 'end' in data;
 };
 
 export const useSelection = () => {
@@ -73,6 +77,42 @@ export const useSelection = () => {
 				);
 				if (isInSelection) {
 					selectedIds.push(element.id);
+				}
+			} else if (element.type === 'shape' && isShape(element.data)) {
+				const shapeData = element.data;
+				const { start, end, type } = shapeData;
+
+				let shapeBounds;
+				if (type === 'rectangle') {
+					const { x, y, width, height } = createRectangle(start, end);
+					shapeBounds = { x, y, width, height };
+				} else if (type === 'circle') {
+					const { cx, cy, r } = createCircle(start, end);
+					shapeBounds = { x: cx - r, y: cy - r, width: r * 2, height: r * 2 };
+				} else if (type === 'triangle') {
+					const pointsStr = createTriangle(start, end);
+					const points = pointsStr.split(' ').map(pStr => {
+						const [x, y] = pStr.split(',').map(Number);
+						return { x, y };
+					});
+					const minX = Math.min(...points.map(p => p.x));
+					const minY = Math.min(...points.map(p => p.y));
+					const maxX = Math.max(...points.map(p => p.x));
+					const maxY = Math.max(...points.map(p => p.y));
+					shapeBounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+				}
+
+				if (shapeBounds) {
+					const isInSelection = isRectangleInSelection(
+						shapeBounds.x,
+						shapeBounds.y,
+						shapeBounds.width,
+						shapeBounds.height,
+						selectionBox
+					);
+					if (isInSelection) {
+						selectedIds.push(element.id);
+					}
 				}
 			}
 		});

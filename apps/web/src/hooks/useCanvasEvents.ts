@@ -9,6 +9,11 @@ const isStickyNote = (data: DrawPath | StickyNote | Shape): data is StickyNote =
 	return 'position' in data && 'text' in data;
 };
 
+// Type guard for shapes
+const isShape = (data: DrawPath | StickyNote | Shape): data is Shape => {
+	return 'start' in data && 'end' in data;
+};
+
 interface UseCanvasEventsProps {
 	containerRef: React.RefObject<HTMLDivElement>;
 	canvasState: CanvasState;
@@ -88,6 +93,25 @@ export const useCanvasEvents = ({
 		return null;
 	}, [elements]);
 
+	// Memoize shape lookup to avoid recalculation
+	const getShapeAtPoint = useCallback((point: Point): string | null => {
+		for (let i = elements.length - 1; i >= 0; i--) {
+			const element = elements[i];
+			if (element.type === 'shape' && isShape(element.data)) {
+				const shape = element.data;
+				// This is a simplified check. For more complex shapes, you'll need more advanced point-in-shape tests.
+				const { start, end } = shape;
+				if (point.x >= Math.min(start.x, end.x) &&
+					point.x <= Math.max(start.x, end.x) &&
+					point.y >= Math.min(start.y, end.y) &&
+					point.y <= Math.max(start.y, end.y)) {
+					return element.id;
+				}
+			}
+		}
+		return null;
+	}, [elements]);
+
 	// Memoize editing check
 	const isEditingStickyNote = useCallback(() => {
 		// Check if any textarea is focused
@@ -108,6 +132,21 @@ export const useCanvasEvents = ({
 			setIsDrawingShape(true);
 			onShapeStart(canvasPos);
 		} else if (tool === 'select') {
+			// Check if clicking on a shape
+			const shapeId = getShapeAtPoint(canvasPos);
+			if (shapeId) {
+				if (e.shiftKey) {
+					if (selectedElements.includes(shapeId)) {
+						selectElements(selectedElements.filter(id => id !== shapeId));
+					} else {
+						selectElements([...selectedElements, shapeId]);
+					}
+				} else {
+					selectElements([shapeId]);
+				}
+				return;
+			}
+
 			// Check if clicking on a sticky note
 			const stickyNoteId = getStickyNoteAtPoint(canvasPos);
 			if (stickyNoteId) {
@@ -138,7 +177,7 @@ export const useCanvasEvents = ({
 			createStickyNoteInYJS(canvasPos);
 			setTool('select');
 		}
-	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onShapeStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getStickyNoteAtPoint, selectedElements, selectElements, editingStickyNoteId, setEditingStickyNoteId]);
+	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onShapeStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getShapeAtPoint, getStickyNoteAtPoint, selectedElements, selectElements, editingStickyNoteId, setEditingStickyNoteId]);
 
 	// Memoize double click handler
 	const handleDoubleClick = useCallback((e: React.MouseEvent) => {

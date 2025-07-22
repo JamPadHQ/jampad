@@ -127,7 +127,64 @@ const ShapeElement = memo(({
 		}
 	};
 
-	return <g key={element.id}>{renderShape()}</g>;
+	const renderSelectionHighlight = () => {
+		if (!isSelected) return null;
+
+		const highlightStrokeWidth = strokeWidth + 4 / canvasState.zoom;
+
+		switch (type) {
+			case 'rectangle': {
+				const { x, y, width, height } = createRectangle(start, end);
+				return (
+					<rect
+						x={x}
+						y={y}
+						width={width}
+						height={height}
+						stroke="#3b82f6"
+						strokeWidth={highlightStrokeWidth}
+						fill="none"
+						opacity={0.3}
+					/>
+				);
+			}
+			case 'circle': {
+				const { cx, cy, r } = createCircle(start, end);
+				return (
+					<circle
+						cx={cx}
+						cy={cy}
+						r={r}
+						stroke="#3b82f6"
+						strokeWidth={highlightStrokeWidth}
+						fill="none"
+						opacity={0.3}
+					/>
+				);
+			}
+			case 'triangle': {
+				const points = createTriangle(start, end);
+				return (
+					<polygon
+						points={points}
+						stroke="#3b82f6"
+						strokeWidth={highlightStrokeWidth}
+						fill="none"
+						opacity={0.3}
+					/>
+				);
+			}
+			default:
+				return null;
+		}
+	};
+
+	return (
+		<g key={element.id}>
+			{renderShape()}
+			{renderSelectionHighlight()}
+		</g>
+	);
 });
 
 export const CanvasElements = memo(({ canvasState }: CanvasElementsProps) => {
