@@ -105,4 +105,38 @@ export const getActualCanvasPosition = (canvasState: CanvasState): Point => {
 		x: -canvasState.x / canvasState.zoom,
 		y: -canvasState.y / canvasState.zoom
 	};
+};
+
+/**
+ * Create a rectangle SVG path from two points
+ */
+export const createRectangle = (start: Point, end: Point) => {
+	const x = Math.min(start.x, end.x);
+	const y = Math.min(start.y, end.y);
+	const width = Math.abs(start.x - end.x);
+	const height = Math.abs(start.y - end.y);
+	return { x, y, width, height };
+};
+
+/**
+ * Create a circle SVG path from two points
+ */
+export const createCircle = (start: Point, end: Point) => {
+	const cx = (start.x + end.x) / 2;
+	const cy = (start.y + end.y) / 2;
+	const r = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)) / 2;
+	return { cx, cy, r };
+};
+
+/**
+ * Create a triangle SVG path from two points
+ */
+export const createTriangle = (start: Point, end: Point) => {
+	const x1 = start.x;
+	const y1 = end.y;
+	const x2 = (start.x + end.x) / 2;
+	const y2 = start.y;
+	const x3 = end.x;
+	const y3 = end.y;
+	return `${x1},${y1} ${x2},${y2} ${x3},${y3}`;
 }; 

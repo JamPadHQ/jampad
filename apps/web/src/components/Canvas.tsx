@@ -3,9 +3,11 @@ import { useCanvasNavigation } from '@/hooks/useCanvasNavigation';
 import { useCanvasEvents } from '@/hooks/useCanvasEvents';
 import { useDrawing } from '@/hooks/useDrawing';
 import { useSelection } from '@/hooks/useSelection';
+import { useShapes } from '@/hooks/useShapes';
 import { CanvasGrid } from '@/components/CanvasGrid';
 import { CanvasElements } from '@/components/CanvasElements';
 import { CurrentDrawing } from '@/components/CurrentDrawing';
+import { CurrentShape } from '@/components/CurrentShape';
 import { SelectionBox } from '@/components/SelectionBox';
 import { CanvasOverlay } from '@/components/CanvasOverlay';
 import { getCanvasTransform, getActualCanvasPosition } from '@/lib/canvasUtils';
@@ -41,9 +43,17 @@ function Canvas() {
 		handleSelectionEnd
 	} = useSelection();
 
+	// Shape drawing functionality
+	const {
+		handleShapeStart,
+		handleShapeMove,
+		handleShapeEnd,
+	} = useShapes('default-room');
+
 	// Event handling
 	const {
 		isDrawing,
+		isDrawingShape,
 		isSelecting,
 		handleMouseDown,
 		handleDoubleClick,
@@ -61,7 +71,10 @@ function Canvas() {
 		onDrawEnd: handleDrawEnd,
 		onSelectionStart: handleSelectionStart,
 		onSelectionMove: handleSelectionMove,
-		onSelectionEnd: handleSelectionEnd
+		onSelectionEnd: handleSelectionEnd,
+		onShapeStart: handleShapeStart,
+		onShapeMove: handleShapeMove,
+		onShapeEnd: handleShapeEnd,
 	});
 
 	// Calculate canvas transform and position
@@ -76,6 +89,7 @@ function Canvas() {
 				actualPosition={actualPosition}
 				onResetCanvas={resetCanvas}
 				isDrawing={isDrawing}
+				isDrawingShape={isDrawingShape}
 				isSelecting={isSelecting}
 			/>
 
@@ -113,6 +127,9 @@ function Canvas() {
 
 						{/* Current drawing (while drawing) */}
 						<CurrentDrawing />
+
+						{/* Current shape (while drawing) */}
+						<CurrentShape />
 
 						{/* Selection box */}
 						<SelectionBox

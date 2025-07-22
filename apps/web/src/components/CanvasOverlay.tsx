@@ -9,12 +9,16 @@ interface CanvasOverlayProps {
 	actualPosition: Point;
 	onResetCanvas: () => void;
 	isDrawing: boolean;
+	isDrawingShape: boolean;
 	isSelecting: boolean;
 }
 
 export const CanvasOverlay = ({
 	canvasState,
 	actualPosition,
+	isDrawing,
+	isDrawingShape,
+	isSelecting,
 }: CanvasOverlayProps) => {
 	const { theme, setTheme } = useTheme();
 	return (
@@ -24,6 +28,9 @@ export const CanvasOverlay = ({
 				<span>X: {Math.round(actualPosition.x)}</span>
 				<span>Y: {Math.round(actualPosition.y)}</span>
 				<span>Zoom: {Math.round(canvasState.zoom * 100)}%</span>
+				<span>Drawing: {isDrawing ? 'Yes' : 'No'}</span>
+				<span>Drawing Shape: {isDrawingShape ? 'Yes' : 'No'}</span>
+				<span>Selecting: {isSelecting ? 'Yes' : 'No'}</span>
 			</div>
 
 			<div className="absolute top-3 right-3 z-10 space-x-2">

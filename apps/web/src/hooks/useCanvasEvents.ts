@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useCanvasStore } from '@/lib/store';
 import { useYJS } from './useYJS';
-import { Point, CanvasState, DrawPath, StickyNote } from '@/lib/types';
+import { Point, CanvasState, DrawPath, StickyNote, Shape } from '@/lib/types';
 import { screenToCanvas } from '@/lib/canvasUtils';
 
 // Type guard for sticky notes
-const isStickyNote = (data: DrawPath | StickyNote): data is StickyNote => {
+const isStickyNote = (data: DrawPath | StickyNote | Shape): data is StickyNote => {
 	return 'position' in data && 'text' in data;
 };
 
@@ -23,6 +23,9 @@ interface UseCanvasEventsProps {
 	onSelectionStart: (point: Point) => void;
 	onSelectionMove: (point: Point) => void;
 	onSelectionEnd: () => void;
+	onShapeStart: (point: Point) => void;
+	onShapeMove: (point: Point) => void;
+	onShapeEnd: () => void;
 }
 
 export const useCanvasEvents = ({
@@ -38,10 +41,14 @@ export const useCanvasEvents = ({
 	onDrawEnd,
 	onSelectionStart,
 	onSelectionMove,
-	onSelectionEnd
+	onSelectionEnd,
+	onShapeStart,
+	onShapeMove,
+	onShapeEnd
 }: UseCanvasEventsProps) => {
 	const [isSpacePressed, setIsSpacePressed] = useState(false);
 	const [isDrawing, setIsDrawing] = useState(false);
+	const [isDrawingShape, setIsDrawingShape] = useState(false);
 	const [isSelecting, setIsSelecting] = useState(false);
 
 	// Selective store subscriptions to prevent unnecessary re-renders
@@ -97,6 +104,9 @@ export const useCanvasEvents = ({
 		} else if (tool === 'draw') {
 			setIsDrawing(true);
 			onDrawStart(canvasPos);
+		} else if (tool.startsWith('shape-')) {
+			setIsDrawingShape(true);
+			onShapeStart(canvasPos);
 		} else if (tool === 'select') {
 			// Check if clicking on a sticky note
 			const stickyNoteId = getStickyNoteAtPoint(canvasPos);
@@ -128,7 +138,7 @@ export const useCanvasEvents = ({
 			createStickyNoteInYJS(canvasPos);
 			setTool('select');
 		}
-	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getStickyNoteAtPoint, selectedElements, selectElements, editingStickyNoteId, setEditingStickyNoteId]);
+	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onShapeStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getStickyNoteAtPoint, selectedElements, selectElements, editingStickyNoteId, setEditingStickyNoteId]);
 
 	// Memoize double click handler
 	const handleDoubleClick = useCallback((e: React.MouseEvent) => {
@@ -149,11 +159,14 @@ export const useCanvasEvents = ({
 		} else if (isDrawing && tool === 'draw') {
 			const canvasPos = getCanvasPosition(e.clientX, e.clientY);
 			onDrawMove(canvasPos);
+		} else if (isDrawingShape && tool.startsWith('shape-')) {
+			const canvasPos = getCanvasPosition(e.clientX, e.clientY);
+			onShapeMove(canvasPos);
 		} else if (isSelecting && tool === 'select') {
 			const canvasPos = getCanvasPosition(e.clientX, e.clientY);
 			onSelectionMove(canvasPos);
 		}
-	}, [isDragging, isDrawing, isSelecting, tool, isSpacePressed, updateDragging, getCanvasPosition, onDrawMove, onSelectionMove]);
+	}, [isDragging, isDrawing, isDrawingShape, isSelecting, tool, isSpacePressed, updateDragging, getCanvasPosition, onDrawMove, onShapeMove, onSelectionMove]);
 
 	// Memoize mouse up handler
 	const handleMouseUp = useCallback(() => {
@@ -162,13 +175,18 @@ export const useCanvasEvents = ({
 			setIsDrawing(false);
 		}
 
+		if (isDrawingShape) {
+			onShapeEnd();
+			setIsDrawingShape(false);
+		}
+
 		if (isSelecting) {
 			onSelectionEnd();
 			setIsSelecting(false);
 		}
 
 		stopDragging();
-	}, [isDrawing, isSelecting, onDrawEnd, onSelectionEnd, stopDragging]);
+	}, [isDrawing, isDrawingShape, isSelecting, onDrawEnd, onShapeEnd, onSelectionEnd, stopDragging]);
 
 	// Memoize wheel handler
 	const handleWheel = useCallback((e: WheelEvent) => {
@@ -213,6 +231,7 @@ export const useCanvasEvents = ({
 		if (isDragging) return 'grabbing';
 		if (isSpacePressed || tool === 'move') return 'grab';
 		if (tool === 'draw') return 'crosshair';
+		if (tool.startsWith('shape-')) return 'crosshair';
 		if (tool === 'sticky-note') return 'crosshair';
 		return 'default'; // select tool
 	}, [isDragging, isSpacePressed, tool]);
@@ -240,6 +259,7 @@ export const useCanvasEvents = ({
 	return {
 		isSpacePressed,
 		isDrawing,
+		isDrawingShape,
 		isSelecting,
 		handleMouseDown,
 		handleDoubleClick,

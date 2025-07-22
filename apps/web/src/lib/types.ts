@@ -38,6 +38,17 @@ export interface DrawPath {
 	strokeWidth: number
 }
 
+export type ShapeType = 'rectangle' | 'circle' | 'triangle';
+
+export interface Shape {
+	id: string
+	type: ShapeType
+	start: Point
+	end: Point
+	color: string
+	strokeWidth: number
+}
+
 export interface StickyNote {
 	id: string
 	position: Point
@@ -49,8 +60,8 @@ export interface StickyNote {
 
 export interface Element {
 	id: string
-	type: 'path' | 'sticky-note'
-	data: DrawPath | StickyNote
+	type: 'path' | 'sticky-note' | 'shape'
+	data: DrawPath | StickyNote | Shape
 }
 
 export interface Member {
@@ -58,5 +69,7 @@ export interface Member {
 	color: string
 	sessionId: string
 }
+
+export type User = Member;
 
 export type Settings = {}

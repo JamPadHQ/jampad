@@ -1,9 +1,9 @@
-import type { Element, Member, Point, Tool } from '@/lib/types'
+import type { User, Tool, Element, Point, Member } from '@/lib/types'
 
 // Types for each slice
 export interface UserSlice {
-	user: Member
-	setUser: (user: Member) => void
+	user: User
+	setUser: (user: User) => void
 }
 
 export interface ToolSlice {
@@ -34,6 +34,14 @@ export interface DrawingSlice {
 	cancelDrawing: () => void
 }
 
+export interface ShapeSlice {
+	currentShape: { start: Point; end: Point; type: string } | null;
+	startShape: (point: Point, tool: Tool) => void;
+	updateShape: (point: Point) => void;
+	finishShape: () => string | null;
+	cancelShape: () => void;
+}
+
 export interface MembersSlice {
 	members: Member[]
 	isConnected: boolean
@@ -44,4 +52,4 @@ export interface MembersSlice {
 }
 
 // Combined store type
-export type CanvasStore = UserSlice & ToolSlice & ElementsSlice & DrawingSlice & MembersSlice 
+export type CanvasStore = UserSlice & ToolSlice & ElementsSlice & DrawingSlice & MembersSlice & ShapeSlice; 
