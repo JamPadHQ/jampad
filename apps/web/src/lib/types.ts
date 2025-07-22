@@ -68,6 +68,7 @@ export interface Member {
 	nickname: string
 	color: string
 	sessionId: string
+	cursor?: { x: number, y: number }
 }
 
 export type User = Member;

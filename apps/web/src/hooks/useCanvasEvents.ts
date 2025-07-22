@@ -69,7 +69,7 @@ export const useCanvasEvents = ({
 	const setEditingStickyNoteId = useCanvasStore((state) => state.setEditingStickyNoteId);
 
 	// YJS for collaborative sticky note creation
-	const { createStickyNoteInYJS } = useYJS('default-room');
+	const { createStickyNoteInYJS, updateCursor } = useYJS('default-room');
 
 	// Element transform hook
 	const { startTransform, handleTransform, endTransform, activeHandle } = useElementTransform();
@@ -221,6 +221,7 @@ export const useCanvasEvents = ({
 	// Memoize mouse move handler
 	const handleMouseMove = useCallback((e: MouseEvent) => {
 		const canvasPos = getCanvasPosition(e.clientX, e.clientY);
+		updateCursor(canvasPos);
 
 		if (isTransforming) {
 			handleTransform(canvasPos);
@@ -239,7 +240,7 @@ export const useCanvasEvents = ({
 			const canvasPos = getCanvasPosition(e.clientX, e.clientY);
 			onSelectionMove(canvasPos);
 		}
-	}, [isDragging, isDrawing, isDrawingShape, isSelecting, isTransforming, tool, isSpacePressed, updateDragging, getCanvasPosition, onDrawMove, onShapeMove, onSelectionMove, handleTransform]);
+	}, [isDragging, isDrawing, isDrawingShape, isSelecting, isTransforming, tool, isSpacePressed, updateDragging, getCanvasPosition, onDrawMove, onShapeMove, onSelectionMove, handleTransform, updateCursor]);
 
 	// Memoize mouse up handler
 	const handleMouseUp = useCallback(() => {

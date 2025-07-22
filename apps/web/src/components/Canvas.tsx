@@ -13,6 +13,7 @@ import { SelectionHandles } from '@/components/SelectionHandles';
 import { CanvasOverlay } from '@/components/CanvasOverlay';
 import { getCanvasTransform, getActualCanvasPosition } from '@/lib/canvasUtils';
 import { CANVAS_CONSTANTS } from '@/lib/constants';
+import { MemberCursors } from './MemberCursors';
 
 function Canvas() {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -144,6 +145,8 @@ function Canvas() {
 						{/* Selection handles */}
 						<SelectionHandles canvasState={canvasState} />
 					</svg>
+
+					<MemberCursors canvasState={canvasState} />
 				</div>
 			</div>
 		</div>

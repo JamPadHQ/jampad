@@ -61,16 +61,17 @@ export const useYJS = (roomId: string = 'default-room') => {
 		const onAwarenessChange = () => {
 			if (!provider.current) return;
 			const states = Array.from(provider.current.awareness.getStates().values());
-			// Filter unique members by sessionId
-			const seen = new Set();
-			const members = states
-				.map((state: any) => state.user)
-				.filter((user: any) => {
-					if (!user || !user.sessionId) return false;
-					if (seen.has(user.sessionId)) return false;
-					seen.add(user.sessionId);
-					return true;
-				});
+			const memberMap = new Map();
+
+			states.forEach(state => {
+				const user = state.user;
+				if (user && user.sessionId) {
+					const existing = memberMap.get(user.sessionId) || {};
+					memberMap.set(user.sessionId, { ...existing, ...user });
+				}
+			});
+
+			const members = Array.from(memberMap.values());
 			updateMembers(members);
 		};
 		provider.current.awareness.on('change', onAwarenessChange);
@@ -150,6 +151,15 @@ export const useYJS = (roomId: string = 'default-room') => {
 		};
 	}, [connect, disconnect]);
 
+	const updateCursor = useCallback((position: { x: number, y: number }) => {
+		if (provider.current) {
+			provider.current.awareness.setLocalStateField('user', {
+				...provider.current.awareness.getLocalState()?.user,
+				cursor: position
+			});
+		}
+	}, []);
+
 	const addElementToYJS = useCallback((element: Element) => {
 		if (elementsMap.current) {
 			elementsMap.current.set(element.id, element);
@@ -210,6 +220,7 @@ export const useYJS = (roomId: string = 'default-room') => {
 	return {
 		doc: doc.current,
 		provider: provider.current,
+		updateCursor,
 		addElementToYJS,
 		removeElementFromYJS,
 		updateElementInYJS,
