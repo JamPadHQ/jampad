@@ -58,10 +58,19 @@ export interface StickyNote {
 	height: number
 }
 
+export interface ScreenShare {
+	id: string;
+	streamId: string;
+	userId: string;
+	position: Point;
+	width: number;
+	height: number;
+}
+
 export interface Element {
-	id: string
-	type: 'path' | 'sticky-note' | 'shape'
-	data: DrawPath | StickyNote | Shape
+	id: string;
+	type: 'path' | 'sticky-note' | 'shape' | 'screenshare';
+	data: DrawPath | StickyNote | Shape | ScreenShare;
 }
 
 export interface Member {

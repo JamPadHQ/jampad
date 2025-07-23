@@ -1,19 +1,23 @@
 import { useState, useCallback } from 'react';
 import { useCanvasStore } from '@/lib/store';
-import { SelectionBox, Point, DrawPath, StickyNote, Shape } from '../lib/types';
+import { SelectionBox, Point, DrawPath, StickyNote, Shape, ScreenShare } from '../lib/types';
 import { isPointInSelection, isRectangleInSelection, createRectangle, createCircle, createTriangle } from '../lib/canvasUtils';
 
 // Type guards
-const isDrawPath = (data: DrawPath | StickyNote | Shape): data is DrawPath => {
+const isDrawPath = (data: DrawPath | StickyNote | Shape | ScreenShare): data is DrawPath => {
 	return 'points' in data;
 };
 
-const isStickyNote = (data: DrawPath | StickyNote | Shape): data is StickyNote => {
+const isStickyNote = (data: DrawPath | StickyNote | Shape | ScreenShare): data is StickyNote => {
 	return 'position' in data && 'text' in data;
 };
 
-const isShape = (data: DrawPath | StickyNote | Shape): data is Shape => {
+const isShape = (data: DrawPath | StickyNote | Shape | ScreenShare): data is Shape => {
 	return 'start' in data && 'end' in data;
+};
+
+const isScreenShare = (data: DrawPath | StickyNote | Shape | ScreenShare): data is ScreenShare => {
+	return 'streamId' in data && 'position' in data;
 };
 
 export const useSelection = () => {
@@ -31,7 +35,6 @@ export const useSelection = () => {
 	const setEditingStickyNoteId = useCanvasStore((state) => state.setEditingStickyNoteId);
 
 	const handleSelectionStart = useCallback((point: Point) => {
-		console.log('Starting selection at:', point);
 		clearSelection();
 		// Clear editing state when starting a new selection
 		setEditingStickyNoteId(null);
@@ -113,6 +116,18 @@ export const useSelection = () => {
 					if (isInSelection) {
 						selectedIds.push(element.id);
 					}
+				}
+			} else if (element.type === 'screenshare' && isScreenShare(element.data)) {
+				const screenShareData = element.data;
+				const isInSelection = isRectangleInSelection(
+					screenShareData.position.x,
+					screenShareData.position.y,
+					screenShareData.width,
+					screenShareData.height,
+					selectionBox
+				);
+				if (isInSelection) {
+					selectedIds.push(element.id);
 				}
 			}
 		});

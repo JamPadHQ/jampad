@@ -61,14 +61,27 @@ export const useYJS = (roomId: string = 'default-room') => {
 		// Listen for awareness (presence) changes
 		const onAwarenessChange = () => {
 			if (!provider.current) return;
+
 			const states = Array.from(provider.current.awareness.getStates().values());
 			const memberMap = new Map();
+			const connectedUsers = new Set();
 
-			states.forEach(state => {
+			states.forEach((state) => {
 				const user = state.user;
 				if (user && user.sessionId) {
+					connectedUsers.add(user.sessionId);
 					const existing = memberMap.get(user.sessionId) || {};
 					memberMap.set(user.sessionId, { ...existing, ...user });
+				}
+			});
+
+			const allElements = Array.from(elementsMap.current!.values());
+			allElements.forEach((element) => {
+				if (element.type === 'screenshare') {
+					const screenShareData = element.data as any; // Cast to access userId
+					if (!connectedUsers.has(screenShareData.userId)) {
+						elementsMap.current!.delete(element.id);
+					}
 				}
 			});
 
@@ -193,8 +206,10 @@ export const useYJS = (roomId: string = 'default-room') => {
 	const removeElementFromYJS = useCallback((id: string) => {
 		if (elementsMap.current) {
 			elementsMap.current.delete(id);
+			const elements = Array.from(elementsMap.current!.values());
+			setElements(elements);
 		}
-	}, []);
+	}, [setElements]);
 
 	const updateElementInYJS = useCallback((id: string, updates: Partial<Element>) => {
 		if (elementsMap.current) {

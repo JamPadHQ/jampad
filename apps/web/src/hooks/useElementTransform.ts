@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
 import { useCanvasStore } from '@/lib/store';
 import { useYJS } from './useYJS';
-import { Point, Element, DrawPath, StickyNote, Shape } from '@/lib/types';
+import { Point, Element, DrawPath, StickyNote, Shape, ScreenShare } from '@/lib/types';
 import { getElementBounds } from '@/lib/canvasUtils';
+import { deepClone } from '@/lib/clone';
 
 type Handle = 'tl' | 'tm' | 'tr' | 'ml' | 'mr' | 'bl' | 'bm' | 'br' | 'move';
 
@@ -12,7 +13,7 @@ export const useElementTransform = () => {
 	const [initialPoint, setInitialPoint] = useState<Point>({ x: 0, y: 0 });
 	const [selectionBoundingBox, setSelectionBoundingBox] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
 
-	const { elements, selectedElements, updateElement, removeElement } = useCanvasStore();
+	const { elements, selectedElements, removeElement } = useCanvasStore();
 	const { updateElementInYJS, removeElementFromYJS } = useYJS();
 
 	const startTransform = useCallback((handle: Handle, point: Point) => {
@@ -24,7 +25,7 @@ export const useElementTransform = () => {
 		selectedElements.forEach(id => {
 			const element = elements.find(el => el.id === id);
 			if (element) {
-				initial[id] = JSON.parse(JSON.stringify(element)); // Deep copy
+				initial[id] = deepClone(element);
 
 				const bounds = getElementBounds(element);
 				if (bounds) {
@@ -104,7 +105,16 @@ export const useElementTransform = () => {
 						y: pivot.y + (data.end.y - pivot.y) * scaleY,
 					};
 				}
-				updateElement(id, { data: newElementData });
+				else if (initialElement.type === 'screenshare') {
+					const data = initialElement.data as ScreenShare;
+					(newElementData as ScreenShare).position = {
+						x: pivot.x + (data.position.x - pivot.x) * scaleX,
+						y: pivot.y + (data.position.y - pivot.y) * scaleY,
+					};
+					(newElementData as ScreenShare).width = data.width * scaleX;
+					(newElementData as ScreenShare).height = data.height * scaleY;
+				}
+				updateElementInYJS(id, { data: newElementData });
 			});
 			return;
 		}
@@ -122,6 +132,9 @@ export const useElementTransform = () => {
 				} else if (initialElement.type === 'shape') {
 					(newElementData as Shape).start = { x: (initialElement.data as Shape).start.x + dx, y: (initialElement.data as Shape).start.y + dy };
 					(newElementData as Shape).end = { x: (initialElement.data as Shape).end.x + dx, y: (initialElement.data as Shape).end.y + dy };
+				}
+				else if (initialElement.type === 'screenshare') {
+					(newElementData as ScreenShare).position = { x: (initialElement.data as ScreenShare).position.x + dx, y: (initialElement.data as ScreenShare).position.y + dy };
 				}
 			} else {
 				// Resize logic
@@ -151,23 +164,27 @@ export const useElementTransform = () => {
 					(newElementData as Shape).start = newStart;
 					(newElementData as Shape).end = newEnd;
 				}
+				else if (initialElement.type === 'screenshare') {
+					let newX = x, newY = y, newWidth = width, newHeight = height;
+					if (activeHandle.includes('l')) { newWidth -= dx; newX += dx; }
+					if (activeHandle.includes('r')) { newWidth += dx; }
+					if (activeHandle.includes('t')) { newHeight -= dy; newY += dy; }
+					if (activeHandle.includes('b')) { newHeight += dy; }
+					(newElementData as ScreenShare).position = { x: newX, y: newY };
+					(newElementData as ScreenShare).width = newWidth > 0 ? newWidth : 1;
+					(newElementData as ScreenShare).height = newHeight > 0 ? newHeight : 1;
+				}
 			}
-			updateElement(id, { data: newElementData });
+			updateElementInYJS(id, { data: newElementData });
 		});
 
-	}, [activeHandle, initialBounds, initialPoint, updateElement, selectionBoundingBox]);
+	}, [activeHandle, initialBounds, initialPoint, updateElementInYJS, selectionBoundingBox]);
 
 	const endTransform = useCallback(() => {
-		Object.keys(initialBounds).forEach(id => {
-			const element = elements.find(el => el.id === id);
-			if (element) {
-				updateElementInYJS(id, { data: element.data });
-			}
-		});
 		setActiveHandle(null);
 		setInitialBounds({});
 		setSelectionBoundingBox(null);
-	}, [initialBounds, elements, updateElementInYJS]);
+	}, []);
 
 	const deleteSelectedElements = useCallback(() => {
 		selectedElements.forEach(id => {

@@ -1,24 +1,29 @@
 import { memo, useMemo } from 'react';
 import { useCanvasStore } from '@/lib/store';
-import { CanvasState, DrawPath, StickyNote, Shape } from '@/lib/types';
+import { CanvasState, DrawPath, StickyNote, Shape, ScreenShare, Element } from '@/lib/types';
 import { StickyNote as StickyNoteComponent } from './StickyNote';
 import { createRectangle, createCircle, createTriangle } from '@/lib/canvasUtils';
+import ScreenShareDisplay from './ScreenShareDisplay';
 
 interface CanvasElementsProps {
 	canvasState: CanvasState;
 }
 
 // Type guards
-const isDrawPath = (data: DrawPath | StickyNote | Shape): data is DrawPath => {
+const isDrawPath = (data: Element['data']): data is DrawPath => {
 	return 'points' in data;
 };
 
-const isStickyNote = (data: DrawPath | StickyNote | Shape): data is StickyNote => {
+const isStickyNote = (data: Element['data']): data is StickyNote => {
 	return 'position' in data && 'text' in data;
 };
 
-const isShape = (data: DrawPath | StickyNote | Shape): data is Shape => {
+const isShape = (data: Element['data']): data is Shape => {
 	return 'start' in data && 'end' in data;
+};
+
+const isScreenShare = (data: Element['data']): data is ScreenShare => {
+	return 'streamId' in data && 'userId' in data;
 };
 
 // Memoized path rendering component
@@ -225,6 +230,13 @@ export const CanvasElements = memo(({ canvasState }: CanvasElementsProps) => {
 						element={element}
 						isSelected={isSelected}
 						canvasState={canvasState}
+					/>
+				);
+			} else if (element.type === 'screenshare' && isScreenShare(element.data)) {
+				return (
+					<ScreenShareDisplay
+						key={element.id}
+						screenShare={element.data}
 					/>
 				);
 			}

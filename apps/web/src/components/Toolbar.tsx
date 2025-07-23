@@ -4,6 +4,7 @@ import { useCanvasStore } from '@/lib/store';
 import type { Tool } from '@/lib/types';
 import { useState, memo, useCallback, useMemo } from 'react';
 import SettingsDialog from './SettingsDialog';
+import { useScreenShare } from '@/hooks/useScreenShare';
 
 const TOOLS: { icon: React.ElementType, tool: Tool }[] = [
 	{
@@ -53,6 +54,7 @@ const ToolButton = memo(({
 
 function Toolbar() {
 	const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+	const { isScreenSharing, startScreenShare, stopScreenShare } = useScreenShare('default-room');
 
 	// Selective store subscriptions to prevent unnecessary re-renders
 	const currentTool = useCanvasStore((state) => state.tool);
@@ -110,7 +112,7 @@ function Toolbar() {
 					<SquareIcon />
 				</Button>
 				<div className='h-4 w-px bg-foreground/25 mx-2' />
-				<Button variant='ghost' size='icon'>
+				<Button variant={isScreenSharing ? 'default' : 'ghost'} size='icon' onClick={isScreenSharing ? stopScreenShare : startScreenShare}>
 					<MonitorIcon />
 				</Button>
 				<div className='h-4 w-px bg-foreground/25 mx-2' />

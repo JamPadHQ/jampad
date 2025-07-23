@@ -53,5 +53,11 @@ export interface MembersSlice {
 	setConnected: (connected: boolean) => void
 }
 
+export interface StreamsSlice {
+	streams: { [key: string]: MediaStream };
+	addStream: (streamId: string, stream: MediaStream) => void;
+	removeStream: (streamId: string) => void;
+}
+
 // Combined store type
-export type CanvasStore = UserSlice & ToolSlice & ElementsSlice & DrawingSlice & MembersSlice & ShapeSlice; 
+export type CanvasStore = UserSlice & ToolSlice & ElementsSlice & DrawingSlice & MembersSlice & ShapeSlice & StreamsSlice; 

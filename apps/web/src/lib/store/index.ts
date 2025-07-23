@@ -6,6 +6,7 @@ import { createElementsSlice } from './elementsSlice'
 import { createDrawingSlice } from './drawingSlice'
 import { createMembersSlice } from './membersSlice'
 import { createShapeSlice } from './shapeSlice'
+import { createStreamsSlice } from './streamsSlice'
 
 // Combined store with optimized performance
 export const useCanvasStore = create<CanvasStore>()((...a) => ({
@@ -15,6 +16,7 @@ export const useCanvasStore = create<CanvasStore>()((...a) => ({
 	...createDrawingSlice(...a),
 	...createMembersSlice(...a),
 	...createShapeSlice(...a),
+	...createStreamsSlice(...a),
 }))
 
 // Re-export types for convenience

@@ -62,11 +62,6 @@ export function measurePerformance<T extends (...args: any[]) => any>(
 		const start = performance.now();
 		const result = fn(...args);
 		const end = performance.now();
-
-		if (process.env.NODE_ENV === 'development') {
-			console.log(`${name} took ${end - start}ms`);
-		}
-
 		return result;
 	}) as T;
 }

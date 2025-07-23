@@ -2,17 +2,21 @@ import { useState, useCallback, useEffect } from 'react';
 import { useCanvasStore } from '@/lib/store';
 import { useYJS } from './useYJS';
 import { useElementTransform } from './useElementTransform';
-import { Point, CanvasState, DrawPath, StickyNote, Shape } from '@/lib/types';
+import { Point, CanvasState, StickyNote, Shape, ScreenShare, Element } from '@/lib/types';
 import { screenToCanvas, getElementBounds } from '@/lib/canvasUtils';
 
 // Type guard for sticky notes
-const isStickyNote = (data: DrawPath | StickyNote | Shape): data is StickyNote => {
+const isStickyNote = (data: Element['data']): data is StickyNote => {
 	return 'position' in data && 'text' in data;
 };
 
 // Type guard for shapes
-const isShape = (data: DrawPath | StickyNote | Shape): data is Shape => {
+const isShape = (data: Element['data']): data is Shape => {
 	return 'start' in data && 'end' in data;
+};
+
+const isScreenShare = (data: Element['data']): data is ScreenShare => {
+	return 'stream' in data && 'userId' in data;
 };
 
 interface UseCanvasEventsProps {
@@ -129,6 +133,22 @@ export const useCanvasEvents = ({
 		return null;
 	}, [elements]);
 
+	const getScreenShareAtPoint = useCallback((point: Point): string | null => {
+		for (let i = elements.length - 1; i >= 0; i--) {
+			const element = elements[i];
+			if (element.type === 'screenshare' && isScreenShare(element.data)) {
+				const screenShare = element.data;
+				if (point.x >= screenShare.position.x &&
+					point.x <= screenShare.position.x + screenShare.width &&
+					point.y >= screenShare.position.y &&
+					point.y <= screenShare.position.y + screenShare.height) {
+					return element.id;
+				}
+			}
+		}
+		return null;
+	}, [elements]);
+
 	// Memoize editing check
 	const isEditingStickyNote = useCallback(() => {
 		// Check if any textarea is focused
@@ -176,12 +196,27 @@ export const useCanvasEvents = ({
 			if (shapeId) {
 				if (e.shiftKey) {
 					if (selectedElements.includes(shapeId)) {
-						selectElements(selectedElements.filter(id => id !== shapeId));
+						selectElements(selectedElements.filter((id) => id !== shapeId));
 					} else {
 						selectElements([...selectedElements, shapeId]);
 					}
 				} else {
 					selectElements([shapeId]);
+				}
+				return;
+			}
+
+			// Check if clicking on a screen share
+			const screenShareId = getScreenShareAtPoint(canvasPos);
+			if (screenShareId) {
+				if (e.shiftKey) {
+					if (selectedElements.includes(screenShareId)) {
+						selectElements(selectedElements.filter((id) => id !== screenShareId));
+					} else {
+						selectElements([...selectedElements, screenShareId]);
+					}
+				} else {
+					selectElements([screenShareId]);
 				}
 				return;
 			}
@@ -216,7 +251,7 @@ export const useCanvasEvents = ({
 			createStickyNoteInYJS(canvasPos);
 			setTool('select');
 		}
-	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onShapeStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getShapeAtPoint, getStickyNoteAtPoint, selectedElements, selectElements, editingStickyNoteId, setEditingStickyNoteId, startTransform, elements]);
+	}, [tool, isSpacePressed, getCanvasPosition, startDragging, onDrawStart, onShapeStart, onSelectionStart, createStickyNote, createStickyNoteInYJS, setTool, getShapeAtPoint, getStickyNoteAtPoint, getScreenShareAtPoint, selectedElements, selectElements, editingStickyNoteId, setEditingStickyNoteId, startTransform, elements]);
 
 	// Memoize double click handler
 	const handleDoubleClick = useCallback((e: React.MouseEvent) => {

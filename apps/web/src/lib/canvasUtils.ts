@@ -1,4 +1,4 @@
-import { CanvasState, Point, SelectionBox, DrawPath, StickyNote, Shape, Element } from './types';
+import { CanvasState, Point, SelectionBox, DrawPath, StickyNote, Shape, Element, ScreenShare } from './types';
 
 /**
  * Convert screen coordinates to canvas coordinates
@@ -143,6 +143,9 @@ export const getElementBounds = (element: Element): { x: number; y: number; widt
 			const maxY = Math.max(...points.map(p => p.y));
 			return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 		}
+	} else if (element.type === 'screenshare') {
+		const screenShareData = element.data as ScreenShare;
+		return { x: screenShareData.position.x, y: screenShareData.position.y, width: screenShareData.width, height: screenShareData.height };
 	}
 	return null;
 }
