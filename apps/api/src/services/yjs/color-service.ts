@@ -5,16 +5,29 @@ const pastelColors = [
 	'#20B2AA', '#87CEFA', '#DDA0DD', '#98FB98', '#F0E68C'
 ]
 
-let colorIndex = 0
+// In-memory store for user colors per room
+// Map<roomName, Map<nickname, color>>
+const roomColors = new Map<string, Map<string, string>>()
 
 export class ColorService {
-	static getNextColor(): string {
-		const color = pastelColors[colorIndex % pastelColors.length]
-		colorIndex++
-		return color
-	}
+	static getUserColor(roomName: string, nickname: string): string {
+		// Get or create the color map for the room
+		const colorMap = roomColors.get(roomName) || new Map<string, string>()
+		roomColors.set(roomName, colorMap)
 
-	static resetColorIndex(): void {
-		colorIndex = 0
+		// Check if the user already has a color in this room
+		if (colorMap.has(nickname)) {
+			return colorMap.get(nickname)!
+		}
+
+		// Assign a new color
+		const usedColors = new Set(colorMap.values())
+		const availableColors = pastelColors.filter(c => !usedColors.has(c))
+		const color = availableColors.length > 0
+			? availableColors[Math.floor(Math.random() * availableColors.length)]
+			: pastelColors[Math.floor(Math.random() * pastelColors.length)] // Fallback if all colors are used
+
+		colorMap.set(nickname, color)
+		return color
 	}
 } 

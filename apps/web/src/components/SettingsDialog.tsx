@@ -21,9 +21,9 @@ type SettingsDialogProps = {
 }
 
 // Memoized form component to prevent unnecessary re-renders
-const SettingsForm = memo(({ user, setUser, onOpenChange }: {
+const SettingsForm = memo(({ user, setNickname, onOpenChange }: {
 	user: any;
-	setUser: any;
+	setNickname: (nickname: string) => Promise<void>;
 	onOpenChange: (open: boolean) => void;
 }) => {
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -34,14 +34,11 @@ const SettingsForm = memo(({ user, setUser, onOpenChange }: {
 		mode: 'onBlur', // Only validate on blur to improve typing performance
 	})
 
-	const onSubmit = useCallback((values: z.infer<typeof formSchema>) => {
-		setUser({
-			nickname: values.nickname,
-			color: user.color,
-		})
+	const onSubmit = useCallback(async (values: z.infer<typeof formSchema>) => {
+		await setNickname(values.nickname)
 		toast.success("Settings saved")
 		onOpenChange(false)
-	}, [setUser, user.color, onOpenChange])
+	}, [setNickname, onOpenChange])
 
 	return (
 		<Form {...form}>
@@ -89,14 +86,14 @@ const SettingsForm = memo(({ user, setUser, onOpenChange }: {
 function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 	// Selective store subscription to prevent unnecessary re-renders
 	const user = useCanvasStore((state) => state.user);
-	const setUser = useCanvasStore((state) => state.setUser);
+	const setNickname = useCanvasStore((state) => state.setNickname);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
 				<SettingsForm
 					user={user}
-					setUser={setUser}
+					setNickname={setNickname}
 					onOpenChange={onOpenChange}
 				/>
 			</DialogContent>

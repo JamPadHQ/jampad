@@ -16,7 +16,8 @@ export const useYJS = (roomId: string = 'default-room') => {
 		user,
 		setConnected,
 		updateMembers,
-		setElements
+		setElements,
+		fetchUserColor
 	} = useCanvasStore();
 
 	const connect = useCallback(() => {
@@ -145,11 +146,34 @@ export const useYJS = (roomId: string = 'default-room') => {
 		};
 		window.addEventListener('beforeunload', handleUnload);
 
+		// Fetch user color when the component mounts
+		fetchUserColor(roomId);
+
 		return () => {
 			window.removeEventListener('beforeunload', handleUnload);
 			disconnect();
 		};
-	}, [connect, disconnect]);
+	}, [connect, disconnect, fetchUserColor, roomId]);
+
+	// Add a new useEffect to sync nickname changes
+	useEffect(() => {
+		if (provider.current && user.nickname) {
+			provider.current.awareness.setLocalStateField('user', {
+				...provider.current.awareness.getLocalState()?.user,
+				nickname: user.nickname,
+			});
+		}
+	}, [user.nickname]);
+
+	// Add a new useEffect to sync color changes
+	useEffect(() => {
+		if (provider.current && user.color) {
+			provider.current.awareness.setLocalStateField('user', {
+				...provider.current.awareness.getLocalState()?.user,
+				color: user.color,
+			});
+		}
+	}, [user.color]);
 
 	const updateCursor = useCallback((position: { x: number, y: number }) => {
 		if (provider.current) {

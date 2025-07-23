@@ -4,6 +4,8 @@ import type { User, Tool, Element, Point, Member } from '@/lib/types'
 export interface UserSlice {
 	user: User
 	setUser: (user: User) => void
+	setNickname: (nickname: string) => Promise<void>
+	fetchUserColor: (roomName: string) => Promise<void>
 }
 
 export interface ToolSlice {
