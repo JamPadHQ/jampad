@@ -72,7 +72,7 @@ export const useCanvasEvents = ({
 	const { createStickyNoteInYJS, updateCursor } = useYJS('default-room');
 
 	// Element transform hook
-	const { startTransform, handleTransform, endTransform, activeHandle } = useElementTransform();
+	const { startTransform, handleTransform, endTransform, activeHandle, deleteSelectedElements } = useElementTransform();
 
 	// Memoize expensive computations
 	const getCanvasPosition = useCallback((clientX: number, clientY: number): Point => {
@@ -80,6 +80,18 @@ export const useCanvasEvents = ({
 		if (!rect) return { x: 0, y: 0 };
 		return screenToCanvas(clientX, clientY, canvasState, rect);
 	}, [containerRef, canvasState]);
+
+	// Listen for delete key press
+	useEffect(() => {
+		const handleDelete = (e: KeyboardEvent) => {
+			if (e.key === 'Delete' || e.key === 'Backspace') {
+				deleteSelectedElements();
+			}
+		};
+
+		document.addEventListener('keydown', handleDelete);
+		return () => document.removeEventListener('keydown', handleDelete);
+	}, [deleteSelectedElements]);
 
 	// Memoize sticky note lookup to avoid recalculation
 	const getStickyNoteAtPoint = useCallback((point: Point): string | null => {

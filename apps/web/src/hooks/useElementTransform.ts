@@ -12,8 +12,8 @@ export const useElementTransform = () => {
 	const [initialPoint, setInitialPoint] = useState<Point>({ x: 0, y: 0 });
 	const [selectionBoundingBox, setSelectionBoundingBox] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
 
-	const { elements, selectedElements, updateElement } = useCanvasStore();
-	const { updateElementInYJS } = useYJS();
+	const { elements, selectedElements, updateElement, removeElement } = useCanvasStore();
+	const { updateElementInYJS, removeElementFromYJS } = useYJS();
 
 	const startTransform = useCallback((handle: Handle, point: Point) => {
 		setActiveHandle(handle);
@@ -169,10 +169,18 @@ export const useElementTransform = () => {
 		setSelectionBoundingBox(null);
 	}, [initialBounds, elements, updateElementInYJS]);
 
+	const deleteSelectedElements = useCallback(() => {
+		selectedElements.forEach(id => {
+			removeElement(id);
+			removeElementFromYJS(id);
+		});
+	}, [selectedElements, removeElement, removeElementFromYJS]);
+
 	return {
 		startTransform,
 		handleTransform,
 		endTransform,
-		activeHandle
+		activeHandle,
+		deleteSelectedElements
 	};
 }; 
