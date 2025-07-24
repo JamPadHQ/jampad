@@ -151,7 +151,7 @@ packages/canvas/src/
 └── index.ts
 ```
 
-#### @jampad/drawing
+#### @jampad/drawing ✅ COMPLETED
 ```
 packages/drawing/src/
 ├── hooks/
@@ -168,7 +168,7 @@ packages/drawing/src/
 └── index.ts
 ```
 
-#### @jampad/selection
+#### @jampad/selection ✅ COMPLETED
 ```
 packages/selection/src/
 ├── hooks/
