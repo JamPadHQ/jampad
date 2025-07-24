@@ -17,6 +17,9 @@
     },
     {
       "path": "./packages/selection"
+    },
+    {
+      "path": "./packages/core-state"
     }
   ]
 }
