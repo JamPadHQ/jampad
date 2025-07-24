@@ -4,16 +4,12 @@ import { useCanvasEvents } from '@/hooks/useCanvasEvents';
 import { useDrawing } from '@/hooks/useDrawing';
 import { useSelection } from '@/hooks/useSelection';
 import { useShapes } from '@/hooks/useShapes';
-import { CanvasGrid } from '@/components/CanvasGrid';
-import { CanvasElements } from '@/components/CanvasElements';
-import { CurrentDrawing } from '@/components/CurrentDrawing';
-import { CurrentShape } from '@/components/CurrentShape';
-import { SelectionBox } from '@/components/SelectionBox';
-import { SelectionHandles } from '@/components/SelectionHandles';
-import { CanvasOverlay } from '@/components/CanvasOverlay';
+import { CanvasGrid, CanvasElements, CanvasOverlay } from './';
+import { CurrentDrawing, CurrentShape } from '../drawing';
+import { SelectionBox, SelectionHandles } from '../selection';
 import { getCanvasTransform, getActualCanvasPosition } from '@/lib/canvasUtils';
 import { CANVAS_CONSTANTS } from '@/lib/constants';
-import { MemberCursors } from './MemberCursors';
+import { MemberCursors } from '../collaboration';
 
 function Canvas() {
 	const containerRef = useRef<HTMLDivElement>(null);

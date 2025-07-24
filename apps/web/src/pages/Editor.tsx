@@ -1,5 +1,5 @@
-import Toolbar from '@/components/Toolbar';
-import InfiniteCanvas from '@/components/Canvas';
+import { Toolbar } from '@/components/toolbar';
+import { Canvas as InfiniteCanvas } from '@/components/canvas';
 import { useYJS } from '@/hooks/useYJS';
 
 function Editor() {

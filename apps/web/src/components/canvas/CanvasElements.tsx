@@ -1,9 +1,9 @@
 import { memo, useMemo } from 'react';
 import { useCanvasStore } from '@/lib/store';
 import { CanvasState, DrawPath, StickyNote, Shape, ScreenShare, Element } from '@/lib/types';
-import { StickyNote as StickyNoteComponent } from './StickyNote';
+import { StickyNote as StickyNoteComponent } from '../StickyNote';
 import { createRectangle, createCircle, createTriangle } from '@/lib/canvasUtils';
-import ScreenShareDisplay from './ScreenShareDisplay';
+import ScreenShareDisplay from '../ScreenShareDisplay';
 
 interface CanvasElementsProps {
 	canvasState: CanvasState;

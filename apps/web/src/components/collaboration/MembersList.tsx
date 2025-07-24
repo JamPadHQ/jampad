@@ -49,4 +49,4 @@ function MembersList() {
 	);
 }
 
-export default MembersList;
+export { MembersList };

@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
 import { Toaster } from "@jampad/ui"
-import { ThemeProvider } from '@/components/ThemeProvider';
+import { ThemeProvider } from '@/components/shared';
 import App from './App';
 
 import './styles.css';

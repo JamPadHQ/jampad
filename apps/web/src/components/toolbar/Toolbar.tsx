@@ -2,9 +2,10 @@ import { CircleIcon, HandIcon, MicOffIcon, MonitorIcon, MousePointer2Icon, PenIc
 import { Button } from '@jampad/ui';
 import { useCanvasStore } from '@/lib/store';
 import type { Tool } from '@/lib/types';
-import { useState, memo, useCallback, useMemo } from 'react';
-import SettingsDialog from './SettingsDialog';
+import { useState, useCallback, useMemo } from 'react';
+import SettingsDialog from '../dialogs/SettingsDialog';
 import { useScreenShare } from '@/hooks/useScreenShare';
+import ToolButton from './ToolButton';
 
 const TOOLS: { icon: React.ElementType, tool: Tool }[] = [
 	{
@@ -25,32 +26,7 @@ const TOOLS: { icon: React.ElementType, tool: Tool }[] = [
 	}
 ]
 
-// Memoized tool button component
-const ToolButton = memo(({
-	icon: Icon,
-	tool,
-	currentTool,
-	onToolSelect
-}: {
-	icon: React.ElementType;
-	tool: Tool;
-	currentTool: Tool;
-	onToolSelect: (tool: Tool) => void;
-}) => {
-	const handleClick = useCallback(() => {
-		onToolSelect(tool);
-	}, [tool, onToolSelect]);
 
-	return (
-		<Button
-			variant={tool === currentTool ? 'default' : 'ghost'}
-			size='icon'
-			onClick={handleClick}
-		>
-			<Icon />
-		</Button>
-	);
-});
 
 function Toolbar() {
 	const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
