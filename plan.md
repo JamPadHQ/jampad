@@ -131,7 +131,7 @@ packages/ui/src/
 └── index.ts
 ```
 
-#### @jampad/canvas
+#### @jampad/canvas ✅ COMPLETED
 ```
 packages/canvas/src/
 ├── hooks/
