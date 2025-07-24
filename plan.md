@@ -1,15 +1,30 @@
 # Frontend Refactoring Plan: Multi-Package Architecture & Plugin System
 
+## Progress Status
+✅ **Phase 0 Completed**: UI components successfully moved to `@jampad/ui` package
+
 ## Overview
-This plan outlines the refactoring of the Jampad frontend codebase into multiple packages for improved scalability, maintainability, and extensibility. The plan includes component reorganization, multi-package architecture, and a comprehensive plugin system.
+This plan outlines the refactoring of the Jampad frontend codebase into multiple **logic packages** for improved scalability, maintainability, and extensibility. The approach separates business logic from UI presentation: logic goes into packages, UI components remain in the web app.
+
+**Architecture Strategy**: 
+- **Core Packages**: Pure logic (hooks, utilities, services, state management)
+- **Web App**: Core UI components and presentation layer
+- **Plugin Packages**: Self-contained with both UI and logic (complete features)
+- **Benefits**: Core logic reusability + plugin self-containment
+
+**Current Progress**: The UI primitives have already been extracted into a separate `@jampad/ui` package.
 
 ## Current State Analysis
 
 ### File Structure
 ```
+packages/
+├── ui/                  # ✅ COMPLETED - UI primitives package
+│   └── src/components/ui/  # 12 UI components (button, dialog, etc.)
+└── (future packages...)
+
 apps/web/src/
-├── components/           # Mixed flat structure (26 files)
-│   ├── ui/              # UI primitives (12 files) - KEEP AS IS
+├── components/           # Mixed flat structure (14 files)
 │   ├── toolbar/         # Empty
 │   ├── canvas/          # Empty
 │   ├── elements/        # Empty
@@ -24,71 +39,101 @@ apps/web/src/
 └── styles.css           # Global styles
 ```
 
-### Key Components Identified
-1. **Core Canvas**: Canvas.tsx, CanvasElements.tsx, CanvasGrid.tsx, CanvasOverlay.tsx
-2. **Plugin Candidates**: StickyNote.tsx, ScreenShareDisplay.tsx
-3. **Tool System**: Toolbar.tsx, CurrentDrawing.tsx, CurrentShape.tsx
-4. **Collaboration**: MembersList.tsx, MemberCursors.tsx
-5. **Selection System**: SelectionBox.tsx, SelectionHandles.tsx
+### Key Areas Identified
+1. **Core UI Components** (Stay in apps/web): Canvas, toolbar, selection, collaboration components
+2. **Core Logic to Extract**:
+   - **Canvas**: useCanvasEvents, useCanvasNavigation, canvasUtils
+   - **Drawing**: useDrawing, useShapes, drawing utilities
+   - **Selection**: useSelection, useElementTransform
+   - **Collaboration**: useYJS, streamManager, YJS integration
+   - **State Management**: All store slices and types
+   - **Plugin System**: Plugin interfaces, manager, context
+3. **Plugin Features** (Self-contained packages): StickyNote, ScreenShare - complete features with UI + logic
 
 ## Phase 1: Component Organization (Week 1)
 
 ### 1.1 Reorganize Components into Functional Folders
+**Goal**: Organize UI components by functionality while keeping them in the web app
+
+**Note**: ✅ UI primitives already moved to `@jampad/ui` package
 
 ```
-apps/web/src/components/
-├── ui/                  # Keep existing UI components
-├── canvas/
-│   ├── Canvas.tsx
-│   ├── CanvasElements.tsx
-│   ├── CanvasGrid.tsx
-│   ├── CanvasOverlay.tsx
-│   └── index.ts
-├── drawing/
-│   ├── CurrentDrawing.tsx
-│   ├── CurrentShape.tsx
-│   └── index.ts
-├── selection/
-│   ├── SelectionBox.tsx
-│   ├── SelectionHandles.tsx
-│   └── index.ts
-├── collaboration/
-│   ├── MembersList.tsx
-│   ├── MemberCursors.tsx
-│   └── index.ts
-├── toolbar/
-│   ├── Toolbar.tsx
-│   ├── ToolButton.tsx (extract from Toolbar)
-│   └── index.ts
-├── dialogs/
-│   ├── SettingsDialog.tsx
-│   └── index.ts
-├── shared/
-│   ├── LoadingSpinner.tsx
-│   ├── ThemeProvider.tsx
-│   └── index.ts
-└── plugins/             # Future plugin components
-    ├── StickyNote.tsx   # Move here temporarily
-    └── ScreenShareDisplay.tsx
-```
-
-### 1.2 Create Index Files
-- Add proper exports for each component folder
-- Update all imports across the codebase
-- Ensure no circular dependencies
-
-## Phase 2: Multi-Package Architecture (Week 2-3)
-
-### 2.1 Create Core Packages
-
-#### @jampad/canvas-core
-```
-packages/canvas-core/src/
+apps/web/src/
 ├── components/
-│   ├── Canvas.tsx
-│   ├── CanvasElements.tsx
-│   ├── CanvasGrid.tsx
-│   └── index.ts
+│   ├── canvas/
+│   │   ├── Canvas.tsx
+│   │   ├── CanvasElements.tsx
+│   │   ├── CanvasGrid.tsx
+│   │   ├── CanvasOverlay.tsx
+│   │   └── index.ts
+│   ├── drawing/
+│   │   ├── CurrentDrawing.tsx
+│   │   ├── CurrentShape.tsx
+│   │   └── index.ts
+│   ├── selection/
+│   │   ├── SelectionBox.tsx
+│   │   ├── SelectionHandles.tsx
+│   │   └── index.ts
+│   ├── collaboration/
+│   │   ├── MembersList.tsx
+│   │   ├── MemberCursors.tsx
+│   │   └── index.ts
+│   ├── toolbar/
+│   │   ├── Toolbar.tsx
+│   │   ├── ToolButton.tsx (extract from Toolbar)
+│   │   └── index.ts
+│   ├── dialogs/
+│   │   ├── SettingsDialog.tsx
+│   │   └── index.ts
+│   ├── shared/
+│   │   ├── LoadingSpinner.tsx
+│   │   ├── ThemeProvider.tsx
+│   │   └── index.ts
+│   └── shared/
+│       ├── (future shared components)
+│       └── index.ts
+├── hooks/               # Temporary - will move to packages
+├── lib/                 # Temporary - will move to packages
+└── pages/
+```
+
+### 1.2 Component Organization Tasks
+- Move components into functional folders
+- Extract ToolButton from Toolbar.tsx
+- Create index.ts files for clean exports
+- Update all component imports to use new folder structure
+- Keep all **core** components in web app (no package moves yet)
+- **Note**: Plugin components (StickyNote, ScreenShare) will be moved to self-contained plugin packages in Phase 4
+
+## Phase 2: Package Architecture (Week 2-3)
+
+### 2.1 Create Logic Packages
+**Goal**: Extract business logic, hooks, utilities, and services into reusable packages
+
+#### @jampad/ui ✅ COMPLETED
+```
+packages/ui/src/
+├── components/ui/
+│   ├── avatar.tsx
+│   ├── button.tsx
+│   ├── card.tsx
+│   ├── dialog.tsx
+│   ├── dropdown-menu.tsx
+│   ├── form.tsx
+│   ├── input.tsx
+│   ├── label.tsx
+│   ├── menubar.tsx
+│   ├── separator.tsx
+│   ├── sonner.tsx
+│   └── tabs.tsx
+├── lib/
+│   └── utils.ts
+└── index.ts
+```
+
+#### @jampad/canvas
+```
+packages/canvas/src/
 ├── hooks/
 │   ├── useCanvasEvents.ts
 │   ├── useCanvasNavigation.ts
@@ -97,72 +142,51 @@ packages/canvas-core/src/
 │   ├── canvasUtils.ts
 │   ├── constants.ts
 │   └── index.ts
-└── types/
-    ├── canvas.ts
-    └── index.ts
+├── types/
+│   ├── canvas.ts
+│   └── index.ts
+└── index.ts
 ```
 
-#### @jampad/drawing-tools
+#### @jampad/drawing
 ```
-packages/drawing-tools/src/
-├── components/
-│   ├── CurrentDrawing.tsx
-│   ├── CurrentShape.tsx
-│   └── index.ts
+packages/drawing/src/
 ├── hooks/
 │   ├── useDrawing.ts
 │   ├── useShapes.ts
 │   └── index.ts
 ├── utils/
 │   └── drawingUtils.ts
-└── types/
-    └── drawing.ts
+├── types/
+│   └── drawing.ts
+└── index.ts
 ```
 
-#### @jampad/selection-system
+#### @jampad/selection
 ```
-packages/selection-system/src/
-├── components/
-│   ├── SelectionBox.tsx
-│   ├── SelectionHandles.tsx
-│   └── index.ts
+packages/selection/src/
 ├── hooks/
 │   ├── useSelection.ts
 │   ├── useElementTransform.ts
 │   └── index.ts
-└── types/
-    └── selection.ts
+├── utils/
+│   └── selectionUtils.ts
+├── types/
+│   └── selection.ts
+└── index.ts
 ```
 
 #### @jampad/collaboration
 ```
 packages/collaboration/src/
-├── components/
-│   ├── MembersList.tsx
-│   ├── MemberCursors.tsx
-│   └── index.ts
 ├── hooks/
 │   ├── useYJS.ts
 │   └── index.ts
 ├── services/
 │   └── streamManager.ts
-└── types/
-    └── collaboration.ts
-```
-
-#### @jampad/toolbar-system
-```
-packages/toolbar-system/src/
-├── components/
-│   ├── Toolbar.tsx
-│   ├── ToolButton.tsx
-│   └── index.ts
-├── hooks/
-│   └── useToolbar.ts
-├── registry/
-│   └── ToolRegistry.ts
-└── types/
-    └── toolbar.ts
+├── types/
+│   └── collaboration.ts
+└── index.ts
 ```
 
 #### @jampad/state-management
@@ -179,8 +203,9 @@ packages/state-management/src/
 ├── store/
 │   ├── index.ts
 │   └── types.ts
-└── hooks/
-    └── useStore.ts
+├── hooks/
+│   └── useStore.ts
+└── index.ts
 ```
 
 ### 2.2 Package Configuration
@@ -192,9 +217,9 @@ Each package will include:
 
 ## Phase 3: Plugin System Architecture (Week 4-5)
 
-### 3.1 Core Plugin System
+### 3.1 Hybrid Plugin System
 
-#### @jampad/plugin-system
+#### @jampad/plugin-system (Core Infrastructure - Logic Only)
 ```
 packages/plugin-system/src/
 ├── core/
@@ -210,13 +235,17 @@ packages/plugin-system/src/
 │   ├── usePlugins.ts
 │   ├── usePluginContext.ts
 │   └── index.ts
-├── components/
-│   ├── PluginProvider.tsx
-│   ├── PluginRenderer.tsx
-│   └── index.ts
-└── types/
-    └── plugin.ts
+├── providers/
+│   └── PluginProvider.ts  # Logic only, no React components
+├── types/
+│   └── plugin.ts
+└── index.ts
 ```
+
+**Plugin System Strategy**: 
+- **Core Plugin Infrastructure**: Logic only (registration, management, context)
+- **Individual Plugins**: Self-contained packages with both UI components and logic
+- **Benefits**: Core infrastructure is reusable, plugins are complete and distributable
 
 ### 3.2 Plugin Interface Definition
 
@@ -232,19 +261,38 @@ interface IPlugin {
 }
 
 interface ICanvasPlugin extends IPlugin {
-  renderElement(element: PluginElement, context: CanvasRenderContext): React.ReactNode;
+  // Self-contained: includes both logic and React components
   createElement?(data: any): PluginElement;
   getElementBounds?(element: PluginElement): Bounds;
+  getElementData?(element: PluginElement): any;
+  
+  // React component for rendering on canvas
+  renderElement(element: PluginElement, context: CanvasRenderContext): React.ReactNode;
+  
+  // Custom hooks for plugin logic
+  hooks?: {
+    useElementLogic?: () => any;
+  };
 }
 
 interface IToolbarPlugin extends IPlugin {
-  getToolbarItems(): ToolbarItem[];
+  getToolbarItems(): ToolbarItem[];  // Includes React components
   onToolSelect?(tool: string): void;
+  
+  // Custom hooks for plugin logic
+  hooks?: {
+    useToolLogic?: () => any;
+  };
 }
 
 interface IOverlayPlugin extends IPlugin {
-  getOverlayButtons(): OverlayButton[];
+  getOverlayButtons(): OverlayButton[];  // Includes React components
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  
+  // Custom hooks for plugin logic
+  hooks?: {
+    useOverlayLogic?: () => any;
+  };
 }
 
 interface PluginContext {
@@ -252,6 +300,20 @@ interface PluginContext {
   yjs: YJSProvider;
   canvas: CanvasAPI;
   events: EventEmitter;
+}
+
+// Plugin-provided UI components
+interface ToolbarItem {
+  id: string;
+  tool: string;
+  component: React.ComponentType<ToolbarItemProps>;
+  tooltip?: string;
+}
+
+interface OverlayButton {
+  id: string;
+  component: React.ComponentType<OverlayButtonProps>;
+  tooltip?: string;
 }
 ```
 
@@ -270,65 +332,138 @@ class PluginManager {
 }
 ```
 
-## Phase 4: Convert Features to Plugins (Week 6-7)
+## Phase 4: Convert Features to Self-Contained Plugins (Week 6-7)
 
 ### 4.1 StickyNote Plugin (@jampad/plugin-sticky-notes)
 
 ```
 packages/plugin-sticky-notes/src/
 ├── components/
-│   ├── StickyNote.tsx
+│   ├── StickyNote.tsx        # React component for canvas rendering
+│   ├── StickyNoteToolbar.tsx # Toolbar button component
 │   └── index.ts
 ├── hooks/
-│   └── useStickyNote.ts
-├── plugin.ts            # Main plugin implementation
-├── types.ts
+│   ├── useStickyNote.ts      # Business logic for sticky note behavior
+│   ├── useStickyNoteEdit.ts  # Editing state and text management
+│   └── index.ts
+├── services/
+│   └── stickyNoteService.ts  # CRUD operations
+├── types/
+│   └── stickyNote.ts
+├── plugin.ts                 # Main plugin implementation
 └── index.ts
 ```
 
-**Plugin Features:**
-- Custom element type: 'sticky-note'
-- Toolbar integration: StickyNote tool button
-- Double-click to edit functionality
-- Canvas element rendering
-- YJS synchronization
-
-**Required Plugin API:**
-- Element creation and updates
-- Store access for editing state
-- Canvas event handling
-- YJS integration for collaboration
+**Complete Self-Contained Plugin:**
+- ✅ React components for UI rendering
+- ✅ Custom hooks for business logic
+- ✅ Element creation/update functions
+- ✅ YJS synchronization logic
+- ✅ Toolbar button integration
+- ✅ Canvas element rendering
 
 ### 4.2 ScreenShare Plugin (@jampad/plugin-screenshare)
 
 ```
 packages/plugin-screenshare/src/
 ├── components/
-│   ├── ScreenShareDisplay.tsx
+│   ├── ScreenShareDisplay.tsx    # React component for canvas rendering
+│   ├── ScreenShareToolbar.tsx    # Toolbar button component
 │   └── index.ts
 ├── hooks/
-│   ├── useScreenShare.ts
+│   ├── useScreenShare.ts         # Screen sharing logic
+│   ├── useWebRTC.ts              # WebRTC connection management
 │   └── index.ts
 ├── services/
-│   └── peerService.ts
+│   ├── peerService.ts            # Peer connection handling
+│   └── streamService.ts          # Stream management
+├── types/
+│   └── screenShare.ts
 ├── plugin.ts
-├── types.ts
 └── index.ts
 ```
 
-**Plugin Features:**
-- Custom element type: 'screenshare'
-- Toolbar integration: ScreenShare button with toggle state
-- WebRTC stream management
-- Peer-to-peer connection handling
-- Stream synchronization via YJS
+**Complete Self-Contained Plugin:**
+- ✅ React components for UI rendering
+- ✅ Custom hooks for business logic
+- ✅ WebRTC and stream management
+- ✅ Toolbar button integration (with toggle state)
+- ✅ YJS stream metadata synchronization
+- ✅ Canvas element rendering
 
-**Required Plugin API:**
-- Media stream management
-- Peer connection handling
-- Store access for stream state
-- YJS integration for stream metadata
-- Event system for connection status
+### 4.3 Plugin Integration Pattern
+
+**Self-Contained Plugin** (`@jampad/plugin-sticky-notes`):
+```typescript
+// plugin.ts
+import { StickyNoteComponent } from './components/StickyNote';
+import { StickyNoteToolbarButton } from './components/StickyNoteToolbar';
+import { useStickyNote } from './hooks/useStickyNote';
+
+export const StickyNotePlugin: ICanvasPlugin = {
+  id: 'sticky-notes',
+  name: 'Sticky Notes',
+  version: '1.0.0',
+  
+  // Plugin provides its own React components
+  renderElement: (element, context) => (
+    <StickyNoteComponent 
+      stickyNote={element.data} 
+      isSelected={context.isSelected}
+      canvasState={context.canvasState}
+    />
+  ),
+  
+  getToolbarItems: () => [{
+    id: 'sticky-note',
+    tool: 'sticky-note',
+    component: StickyNoteToolbarButton,
+    tooltip: 'Add sticky note'
+  }],
+  
+  createElement: (data) => createStickyNoteElement(data),
+  getElementBounds: (element) => getStickyNoteBounds(element),
+  
+  hooks: {
+    useElementLogic: () => useStickyNote(),
+  },
+};
+```
+
+**Plugin Component** (inside the plugin package):
+```typescript
+// components/StickyNote.tsx
+import { useStickyNote } from '../hooks/useStickyNote';
+
+export const StickyNoteComponent = ({ stickyNote, isSelected, canvasState }) => {
+  const { 
+    text, 
+    setText, 
+    isEditing, 
+    startEditing, 
+    stopEditing 
+  } = useStickyNote(stickyNote.id);
+  
+  return (
+    <g transform={`translate(${stickyNote.position.x}, ${stickyNote.position.y})`}>
+      {/* Plugin owns its UI implementation */}
+    </g>
+  );
+};
+```
+
+**Web App Integration**:
+```typescript
+// Web app just renders plugin-provided components
+const pluginManager = new PluginManager();
+pluginManager.register(StickyNotePlugin);
+
+// Canvas renders plugin elements
+{elements.map(element => {
+  const plugin = pluginManager.getPluginForElement(element);
+  return plugin?.renderElement(element, context);
+})}
+```
 
 ### 4.3 Plugin API Requirements
 
@@ -424,50 +559,67 @@ await pluginManager.initializePlugins();
 Use the following Nx commands to generate packages:
 
 ```bash
-# Core packages
-nx g @nx/react:lib canvas-core --directory=packages/canvas-core --bundler vite --unitTestRunner none
-nx g @nx/react:lib drawing-tools --directory=packages/drawing-tools --bundler vite --unitTestRunner none
-nx g @nx/react:lib selection-system --directory=packages/selection-system --bundler vite --unitTestRunner none
-nx g @nx/react:lib collaboration --directory=packages/collaboration --bundler vite --unitTestRunner none
-nx g @nx/react:lib toolbar-system --directory=packages/toolbar-system --bundler vite --unitTestRunner none
-nx g @nx/react:lib state-management --directory=packages/state-management --bundler vite --unitTestRunner none
+# UI package - ✅ ALREADY COMPLETED
+# @jampad/ui is already created and configured
 
-# Plugin system
-nx g @nx/react:lib plugin-system --directory=packages/plugin-system --bundler vite --unitTestRunner none
+# Core packages (no React components)
+nx g @nx/js:lib canvas --directory=packages/canvas --bundler vite --unitTestRunner none
+nx g @nx/js:lib drawing --directory=packages/drawing --bundler vite --unitTestRunner none
+nx g @nx/js:lib selection --directory=packages/selection --bundler vite --unitTestRunner none
+nx g @nx/js:lib collaboration --directory=packages/collaboration --bundler vite --unitTestRunner none
+nx g @nx/js:lib state-management --directory=packages/state-management --bundler vite --unitTestRunner none
 
-# Plugin packages
+# Plugin system (logic only)
+nx g @nx/js:lib plugin-system --directory=packages/plugin-system --bundler vite --unitTestRunner none
+
+# Self-contained plugin packages (include React components)
 nx g @nx/react:lib plugin-sticky-notes --directory=packages/plugin-sticky-notes --bundler vite --unitTestRunner none
 nx g @nx/react:lib plugin-screenshare --directory=packages/plugin-screenshare --bundler vite --unitTestRunner none
 ```
 
+**Note**: Using `@nx/js:lib` instead of `@nx/react:lib` since these are logic-only packages without React components.
+
 ## Benefits
+
+### Architecture Advantages
+- **Hybrid Approach**: Core packages (framework-agnostic) + self-contained plugins (complete features)
+- **Plugin Self-Containment**: Plugins include both UI and logic, making them complete, distributable features
+- **Core Reusability**: Core packages can be used across different UI frameworks
+- **Plugin Autonomy**: Plugin developers control both logic and UI of their features
 
 ### Scalability
 - Modular architecture allows independent development
-- Plugin system enables feature extensibility
-- Clear separation of concerns
+- Plugin system enables feature extensibility through logic hooks
+- Clear separation of concerns between business logic and presentation
 
 ### Maintainability
 - Smaller, focused packages are easier to maintain
-- Clear dependencies between packages
+- Core packages are framework-agnostic
+- Clear boundaries between data/logic and UI rendering
 - Isolated testing and deployment
 
 ### Developer Experience
-- Plugin API enables third-party extensions
-- Clear interfaces for contributing new features
-- Hot-swappable plugin development
+- **Plugin Developers**: Create complete, self-contained features with full UI/logic control
+- **Core Developers**: Work with reusable core packages and core UI components
+- **Plugin Distribution**: Plugins are complete packages that can be easily installed/uninstalled
+- **Hot-swappable plugin development**: Complete features can be added/removed independently
+- **Clear interfaces**: Both core packages and plugin packages have well-defined APIs
 
 ### Performance
 - Tree-shaking at package level
+- Core packages are smaller (no React components)
 - Lazy loading of plugin features
 - Reduced bundle size for unused features
+- Better code splitting between logic and UI
 
 ## Timeline Summary
-- **Week 1**: Component organization
-- **Week 2-3**: Multi-package architecture
-- **Week 4-5**: Plugin system development
-- **Week 6-7**: Plugin conversion (StickyNote & ScreenShare)
+- **Phase 0**: ✅ **COMPLETED** - UI primitives package (`@jampad/ui`)
+- **Week 1**: Component organization (folders only, no package moves)
+- **Week 2-3**: Logic package extraction (5 core packages)
+- **Week 4-5**: Plugin system development (logic-focused)
+- **Week 6-7**: Self-contained plugin conversion (StickyNote & ScreenShare with UI + logic)
 - **Week 8**: Integration and testing
 - **Week 9**: Documentation
 
-Total estimated time: 9 weeks with 1-2 developers. 
+Total estimated time: 9 weeks with 1-2 developers.
+**Revised estimate**: 7-8 weeks remaining (faster due to core package extraction, UI stays in place) 
