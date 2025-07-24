@@ -205,6 +205,22 @@ importers:
         specifier: ^18.0.0
         version: 18.3.23
 
+  packages/drawing:
+    dependencies:
+      '@jampad/canvas':
+        specifier: workspace:*
+        version: link:../canvas
+      react:
+        specifier: ^18.0.0
+        version: 18.3.1
+      zustand:
+        specifier: ^4.5.0
+        version: 4.5.7(@types/react@18.3.23)(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.0.0
+        version: 18.3.23
+
   packages/ui:
     dependencies:
       '@hookform/resolvers':
@@ -7622,7 +7638,7 @@ snapshots:
 
   '@types/react-dom@19.0.0':
     dependencies:
-      '@types/react': 19.0.0
+      '@types/react': 18.3.23
 
   '@types/react@18.3.23':
     dependencies:
