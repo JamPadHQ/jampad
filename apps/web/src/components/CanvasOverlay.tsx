@@ -1,6 +1,6 @@
 import { CanvasState, Point } from '@/lib/types';
 import MembersList from './MembersList';
-import { Button } from './ui/button';
+import { Button } from '@jampad/ui';
 import { MoonIcon } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 

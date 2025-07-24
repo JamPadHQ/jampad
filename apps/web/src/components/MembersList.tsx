@@ -5,8 +5,8 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from './ui/button';
+} from "@jampad/ui"
+import { Button } from '@jampad/ui';
 import { UsersIcon } from 'lucide-react';
 import { useCanvasStore } from '@/lib/store';
 

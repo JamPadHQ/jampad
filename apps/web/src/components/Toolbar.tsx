@@ -1,5 +1,5 @@
 import { CircleIcon, HandIcon, MicOffIcon, MonitorIcon, MousePointer2Icon, PenIcon, Settings2Icon, SquareIcon, StickyNoteIcon, TriangleIcon, VideoIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@jampad/ui';
 import { useCanvasStore } from '@/lib/store';
 import type { Tool } from '@/lib/types';
 import { useState, memo, useCallback, useMemo } from 'react';

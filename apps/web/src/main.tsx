@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@jampad/ui"
 import { ThemeProvider } from '@/components/ThemeProvider';
 import App from './App';
 
