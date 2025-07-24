@@ -46,7 +46,7 @@ apps/web/src/
    - **Drawing**: useDrawing, useShapes, drawing utilities
    - **Selection**: useSelection, useElementTransform
    - **Collaboration**: useYJS, streamManager, YJS integration
-   - **State Management**: All store slices and types
+   - **Core State**: Shared state management (user, elements, tools)
    - **Plugin System**: Plugin interfaces, manager, context
 3. **Plugin Features** (Self-contained packages): StickyNote, ScreenShare - complete features with UI + logic
 
@@ -138,6 +138,9 @@ packages/canvas/src/
 │   ├── useCanvasEvents.ts
 │   ├── useCanvasNavigation.ts
 │   └── index.ts
+├── store/
+│   ├── canvasStore.ts        # Canvas state (position, zoom, viewport)
+│   └── index.ts
 ├── utils/
 │   ├── canvasUtils.ts
 │   ├── constants.ts
@@ -155,6 +158,9 @@ packages/drawing/src/
 │   ├── useDrawing.ts
 │   ├── useShapes.ts
 │   └── index.ts
+├── store/
+│   ├── drawingStore.ts       # Drawing state (current path, shape)
+│   └── index.ts
 ├── utils/
 │   └── drawingUtils.ts
 ├── types/
@@ -169,6 +175,9 @@ packages/selection/src/
 │   ├── useSelection.ts
 │   ├── useElementTransform.ts
 │   └── index.ts
+├── store/
+│   ├── selectionStore.ts     # Selection state (selected elements, transforms)
+│   └── index.ts
 ├── utils/
 │   └── selectionUtils.ts
 ├── types/
@@ -182,6 +191,9 @@ packages/collaboration/src/
 ├── hooks/
 │   ├── useYJS.ts
 │   └── index.ts
+├── store/
+│   ├── collaborationStore.ts # Members, connection status, streams
+│   └── index.ts
 ├── services/
 │   └── streamManager.ts
 ├── types/
@@ -189,31 +201,96 @@ packages/collaboration/src/
 └── index.ts
 ```
 
-#### @jampad/state-management
+#### @jampad/core-state
 ```
-packages/state-management/src/
+packages/core-state/src/
 ├── slices/
-│   ├── userSlice.ts
-│   ├── toolSlice.ts
-│   ├── elementsSlice.ts
-│   ├── drawingSlice.ts
-│   ├── membersSlice.ts
-│   ├── shapeSlice.ts
-│   └── streamsSlice.ts
+│   ├── userSlice.ts          # Global user state
+│   ├── elementsSlice.ts      # Canvas elements registry
+│   └── toolSlice.ts          # Current active tool
 ├── store/
 │   ├── index.ts
 │   └── types.ts
 ├── hooks/
-│   └── useStore.ts
+│   └── useCoreStore.ts
 └── index.ts
 ```
 
-### 2.2 Package Configuration
+**Note**: Each package will have its own Zustand store for package-specific state. Core state only handles shared/global state.
+
+### 2.2 Distributed State Management Architecture
+
+Each package manages its own Zustand store for better encapsulation:
+
+#### **Core Shared State** (`@jampad/core-state`)
+```typescript
+// Global state that needs to be shared across packages
+interface CoreState {
+  user: User;              // Current user info
+  elements: Element[];     // Canvas elements registry  
+  currentTool: Tool;       // Active tool
+}
+```
+
+#### **Package-Specific Stores**
+```typescript
+// @jampad/canvas - Canvas positioning and viewport
+interface CanvasState {
+  position: { x: number; y: number };
+  zoom: number;
+  viewport: { width: number; height: number };
+}
+
+// @jampad/drawing - Current drawing state
+interface DrawingState {
+  currentPath: Point[] | null;
+  currentShape: Shape | null;
+}
+
+// @jampad/selection - Selection and transforms
+interface SelectionState {
+  selectedElements: string[];
+  selectionBox: SelectionBox | null;
+  isTransforming: boolean;
+}
+
+// @jampad/collaboration - Members and connections
+interface CollaborationState {
+  members: Member[];
+  isConnected: boolean;
+  streams: Record<string, MediaStream>;
+}
+```
+
+#### **Plugin Stores**
+```typescript
+// Each plugin has its own store for internal state
+// @jampad/plugin-sticky-notes
+interface StickyNoteState {
+  editingNoteId: string | null;
+  textCache: Record<string, string>;
+}
+
+// @jampad/plugin-screenshare  
+interface ScreenShareState {
+  isSharing: boolean;
+  localStream: MediaStream | null;
+  peerConnections: Record<string, RTCPeerConnection>;
+}
+```
+
+#### **Store Communication**
+- **Core State**: Accessed by all packages for shared data
+- **Package Communication**: Use events or core state for cross-package coordination
+- **Plugin Isolation**: Plugins manage their own state independently
+
+### 2.3 Package Configuration
 Each package will include:
 - `package.json` with proper exports and dependencies
 - `vite.config.ts` for building
 - `tsconfig.json` for TypeScript configuration
 - `index.ts` as main entry point
+- **Own Zustand store** for package-specific state
 
 ## Phase 3: Plugin System Architecture (Week 4-5)
 
@@ -331,6 +408,9 @@ packages/plugin-sticky-notes/src/
 │   ├── useStickyNote.ts      # Business logic for sticky note behavior
 │   ├── useStickyNoteEdit.ts  # Editing state and text management
 │   └── index.ts
+├── store/
+│   ├── stickyNoteStore.ts    # Plugin-specific state (editing, text cache)
+│   └── index.ts
 ├── services/
 │   └── stickyNoteService.ts  # CRUD operations
 ├── types/
@@ -358,6 +438,9 @@ packages/plugin-screenshare/src/
 ├── hooks/
 │   ├── useScreenShare.ts         # Screen sharing logic
 │   ├── useWebRTC.ts              # WebRTC connection management
+│   └── index.ts
+├── store/
+│   ├── screenShareStore.ts       # Plugin state (sharing status, streams)
 │   └── index.ts
 ├── services/
 │   ├── peerService.ts            # Peer connection handling
@@ -548,7 +631,7 @@ nx g @nx/js:lib canvas --directory=packages/canvas --bundler vite --unitTestRunn
 nx g @nx/js:lib drawing --directory=packages/drawing --bundler vite --unitTestRunner none
 nx g @nx/js:lib selection --directory=packages/selection --bundler vite --unitTestRunner none
 nx g @nx/js:lib collaboration --directory=packages/collaboration --bundler vite --unitTestRunner none
-nx g @nx/js:lib state-management --directory=packages/state-management --bundler vite --unitTestRunner none
+nx g @nx/js:lib core-state --directory=packages/core-state --bundler vite --unitTestRunner none
 
 # Plugin system (logic only)
 nx g @nx/js:lib plugin-system --directory=packages/plugin-system --bundler vite --unitTestRunner none
@@ -564,9 +647,11 @@ nx g @nx/react:lib plugin-screenshare --directory=packages/plugin-screenshare --
 
 ### Architecture Advantages
 - **Hybrid Approach**: Core packages (framework-agnostic) + self-contained plugins (complete features)
-- **Plugin Self-Containment**: Plugins include both UI and logic, making them complete, distributable features
+- **Distributed State Management**: Each package manages its own state with Zustand stores
+- **Plugin Self-Containment**: Plugins include both UI, logic, and state management
 - **Core Reusability**: Core packages can be used across different UI frameworks
-- **Plugin Autonomy**: Plugin developers control both logic and UI of their features
+- **Plugin Autonomy**: Plugin developers control logic, UI, and state of their features
+- **Better Isolation**: Package-specific stores prevent state coupling and conflicts
 
 ### Scalability
 - Modular architecture allows independent development
@@ -596,7 +681,7 @@ nx g @nx/react:lib plugin-screenshare --directory=packages/plugin-screenshare --
 ## Timeline Summary
 - **Phase 0**: ✅ **COMPLETED** - UI primitives package (`@jampad/ui`)
 - **Week 1**: Component organization (folders only, no package moves)
-- **Week 2-3**: Logic package extraction (5 core packages)
+- **Week 2-3**: Package extraction (5 core packages with distributed stores)
 - **Week 4-5**: Plugin system development (logic-focused)
 - **Week 6-7**: Self-contained plugin conversion (StickyNote & ScreenShare with UI + logic)
 - **Week 8**: Integration and testing
