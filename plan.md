@@ -268,31 +268,16 @@ interface ICanvasPlugin extends IPlugin {
   
   // React component for rendering on canvas
   renderElement(element: PluginElement, context: CanvasRenderContext): React.ReactNode;
-  
-  // Custom hooks for plugin logic
-  hooks?: {
-    useElementLogic?: () => any;
-  };
 }
 
 interface IToolbarPlugin extends IPlugin {
   getToolbarItems(): ToolbarItem[];  // Includes React components
   onToolSelect?(tool: string): void;
-  
-  // Custom hooks for plugin logic
-  hooks?: {
-    useToolLogic?: () => any;
-  };
 }
 
 interface IOverlayPlugin extends IPlugin {
   getOverlayButtons(): OverlayButton[];  // Includes React components
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-  
-  // Custom hooks for plugin logic
-  hooks?: {
-    useOverlayLogic?: () => any;
-  };
 }
 
 interface PluginContext {
@@ -423,10 +408,6 @@ export const StickyNotePlugin: ICanvasPlugin = {
   
   createElement: (data) => createStickyNoteElement(data),
   getElementBounds: (element) => getStickyNoteBounds(element),
-  
-  hooks: {
-    useElementLogic: () => useStickyNote(),
-  },
 };
 ```
 
